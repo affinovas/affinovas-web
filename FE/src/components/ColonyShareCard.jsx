@@ -1,17 +1,21 @@
 import { useState } from 'react'
 import './ColonyShareCard.css'
 
-export default function ColonyShareCard({ lang = 'ta' }) {
+export default function ColonyShareCard({ lang = 'ta', colonyConfig }) {
   const [antHandle, setAntHandle] = useState('Ant_Ramu')
   const [shareLang, setShareLang] = useState(lang)
   const [copied, setCopied] = useState(false)
+
+  const entryFee = colonyConfig?.entryFeeGrains ?? 123
+  const directBonus = colonyConfig?.directBonusGrains ?? 20
+  const maxDepth = colonyConfig?.maxLevelsPerBranch ?? 10
 
   const referralLink = `https://affinovas.online?tab=colony&ref=${encodeURIComponent(antHandle.trim() || 'AntFounder')}`
 
   const shareText =
     shareLang === 'ta'
-      ? `🐜🌾 வணக்கம்! நான் Affinovas Ants & Grains காலனியில் சேர்ந்து தானியம் சேர்த்து வருகிறேன்.\n\n🪙 Joining: 123 grains\n🤝 நேரடி போனஸ்: +20 grains\n🪺 தனி 10-நிலை பிராஞ்ச் வளர்ச்சி!\n\nநீங்களும் என் காலனி பிராஞ்சில் இணைந்து தானியம் அறுவடை செய்ய வாருங்கள்:\n👉 ${referralLink}`
-      : `🐜🌾 Hey! I am harvesting grains in the Affinovas Ants & Grains Colony.\n\n🪙 Joining: 123 grains\n🤝 Direct Bonus: +20 grains\n🪺 Independent 10-level branch trees!\n\nJoin my branch and let's grow the mound together:\n👉 ${referralLink}`
+      ? `🐜🌾 வணக்கம்! நான் Affinovas Ants & Grains காலனியில் சேர்ந்து தானியம் சேர்த்து வருகிறேன்.\n\n🪙 Joining: ${entryFee} grains\n🤝 நேரடி போனஸ்: +${directBonus} grains\n🪺 தனி ${maxDepth}-நிலை பிராஞ்ச் வளர்ச்சி!\n\nநீங்களும் என் காலனி பிராஞ்சில் இணைந்து தானியம் அறுவடை செய்ய வாருங்கள்:\n👉 ${referralLink}`
+      : `🐜🌾 Hey! I am harvesting grains in the Affinovas Ants & Grains Colony.\n\n🪙 Joining: ${entryFee} grains\n🤝 Direct Bonus: +${directBonus} grains\n🪺 Independent ${maxDepth}-level branch trees!\n\nJoin my branch and let's grow the mound together:\n👉 ${referralLink}`
 
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(referralLink)}&bgcolor=24-18-12&color=251-191-36&margin=10`
 

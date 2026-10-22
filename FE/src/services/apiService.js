@@ -444,6 +444,43 @@ export const apiService = {
     throw new Error('Merchant not found.')
   },
 
+  async addMerchant({ name, category, cashbackRate, logo, redirectUrl }) {
+    try {
+      const res = await fetch(`${API_BASE}/admin/merchants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category, cashbackRate: Number(cashbackRate), logo, redirectUrl })
+      })
+      if (res.ok) return await res.json()
+    } catch {
+      // Fallback
+    }
+
+    const merchants = getStore('merchants', INITIAL_MERCHANTS)
+    const newM = {
+      id: 'm-' + Date.now(),
+      name: name.trim(),
+      category: category.trim(),
+      cashbackRate: Number(cashbackRate),
+      logo: logo || '🛍️',
+      redirectUrl: redirectUrl || 'https://google.com',
+      isActive: true,
+      clicks: 0
+    }
+    merchants.push(newM)
+    setStore('merchants', merchants)
+    return { success: true, merchant: newM }
+  },
+
+  async trackMerchantClick(id) {
+    const merchants = getStore('merchants', INITIAL_MERCHANTS)
+    const m = merchants.find((item) => item.id === id)
+    if (m) {
+      m.clicks = (m.clicks || 0) + 1
+      setStore('merchants', merchants)
+    }
+  },
+
   async getColonySettings() {
     try {
       const res = await fetch(`${API_BASE}/admin/settings`)

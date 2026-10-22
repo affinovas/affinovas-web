@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { apiService } from '../services/apiService'
 import './AuthModal.css'
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLoginSuccess, lang = 'ta' }) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLoginSuccess, lang = 'ta', colonyConfig }) {
   const [mode, setMode] = useState(initialMode) // 'login' | 'register'
   const [identifier, setIdentifier] = useState('')
   const [antName, setAntName] = useState('')
@@ -10,6 +10,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
   const [refCode, setRefCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const entryFee = colonyConfig?.entryFeeGrains ?? 123
+  const maxDepth = colonyConfig?.maxLevelsPerBranch ?? 10
+  const registrationsOpen = colonyConfig?.registrationsOpen ?? true
 
   useEffect(() => {
     setMode(initialMode)
@@ -31,6 +35,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (mode === 'register' && !registrationsOpen) {
+      setError('New colony registrations are currently paused by the Master Administrator.')
+      return
+    }
     setLoading(true)
 
     try {
@@ -77,8 +85,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
                 ? 'உங்கள் கணக்கில் உள்நுழைந்து தானியங்களை கண்காணிக்கவும்'
                 : 'Access your Ant member profile or Master Admin command deck'
               : lang === 'ta'
-                ? '123 தானியங்கள் நுழைவுக் கட்டணத்துடன் காலனியில் இணையுங்கள்'
-                : 'Unlock your 10-level referral branch with 123 grains entry'}
+                ? `${entryFee} தானியங்கள் நுழைவுக் கட்டணத்துடன் காலனியில் இணையுங்கள்`
+                : `Unlock your ${maxDepth}-level referral branch with ${entryFee} grains entry`}
           </p>
         </div>
 

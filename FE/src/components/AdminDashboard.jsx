@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS = {
   registrationsOpen: true
 }
 
-export default function AdminDashboard({ onExitAdmin }) {
+export default function AdminDashboard({ onExitAdmin, onSettingsUpdated, onMerchantsUpdated }) {
   const [activeTab, setActiveTab] = useState('withdrawals')
   const [overview, setOverview] = useState(DEFAULT_OVERVIEW)
   const [members, setMembers] = useState([])
@@ -54,8 +54,14 @@ export default function AdminDashboard({ onExitAdmin }) {
       if (results[0].status === 'fulfilled' && results[0].value) setOverview(results[0].value)
       if (results[1].status === 'fulfilled' && Array.isArray(results[1].value)) setMembers(results[1].value)
       if (results[2].status === 'fulfilled' && Array.isArray(results[2].value)) setWithdrawals(results[2].value)
-      if (results[3].status === 'fulfilled' && Array.isArray(results[3].value)) setMerchants(results[3].value)
-      if (results[4].status === 'fulfilled' && results[4].value) setSettings(results[4].value)
+      if (results[3].status === 'fulfilled' && Array.isArray(results[3].value)) {
+        setMerchants(results[3].value)
+        onMerchantsUpdated?.(results[3].value)
+      }
+      if (results[4].status === 'fulfilled' && results[4].value) {
+        setSettings(results[4].value)
+        onSettingsUpdated?.(results[4].value)
+      }
     } catch (err) {
       console.error('Failed to load admin data', err)
     }
@@ -152,6 +158,9 @@ export default function AdminDashboard({ onExitAdmin }) {
         try {
           await apiService.updateMerchantRate(id, Number(newRate))
           toast.success(`Updated ${name} cashback rebate to ${newRate}%!`, 'Rates Updated')
+          const updatedMerchants = await apiService.getMerchants()
+          setMerchants(updatedMerchants)
+          onMerchantsUpdated?.(updatedMerchants)
           loadAllData()
         } catch (e) {
           toast.error(e.message, 'Update Failed')
@@ -160,12 +169,27 @@ export default function AdminDashboard({ onExitAdmin }) {
     })
   }
 
+  // Handle Toggle Merchant Active Status
+  const handleToggleMerchant = async (id, name, newActive) => {
+    try {
+      await apiService.updateMerchantRate(id, undefined, newActive)
+      toast.info(`Partner ${name} is now ${newActive ? 'Active' : 'Disabled'}.`, 'Merchant Status Changed')
+      const updatedMerchants = await apiService.getMerchants()
+      setMerchants(updatedMerchants)
+      onMerchantsUpdated?.(updatedMerchants)
+      loadAllData()
+    } catch (e) {
+      toast.error(e.message, 'Update Failed')
+    }
+  }
+
   // Handle Colony Settings Save
   const handleSaveSettings = async (e) => {
     e.preventDefault()
     try {
       await apiService.updateColonySettings(settings)
       toast.success('Colony Economics & Compensation Engine rules applied!', 'Settings Saved')
+      onSettingsUpdated?.(settings)
       loadAllData()
     } catch (e) {
       toast.error(e.message, 'Save Failed')
@@ -522,12 +546,21 @@ export default function AdminDashboard({ onExitAdmin }) {
                       </span>
                     </td>
                     <td>
-                      <button
-                        className="admin-btn admin-btn-toggle"
-                        onClick={() => handleUpdateMerchantRate(m.id, m.name, m.cashbackRate)}
-                      >
-                        ✏️ Edit Rate
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <button
+                          className="admin-btn admin-btn-toggle"
+                          onClick={() => handleUpdateMerchantRate(m.id, m.name, m.cashbackRate)}
+                        >
+                          ✏️ Edit Rate
+                        </button>
+                        <button
+                          className={`admin-btn ${m.isActive ? 'admin-btn-reject' : 'admin-btn-approve'}`}
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}
+                          onClick={() => handleToggleMerchant(m.id, m.name, !m.isActive)}
+                        >
+                          {m.isActive ? 'Disable' : 'Enable'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

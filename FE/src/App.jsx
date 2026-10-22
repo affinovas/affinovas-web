@@ -39,6 +39,18 @@ export default function App() {
   const [antName, setAntName] = useState('Ant_Ramu')
   const [copied, setCopied] = useState(false)
 
+  // Dynamic Colony Economics & Merchant Configuration State (Connected to Admin Desk)
+  const [colonyConfig, setColonyConfig] = useState({
+    entryFeeGrains: 123,
+    directBonusGrains: 20,
+    levelExpansionMultiplier: 5,
+    maxLevelsPerBranch: 10,
+    grainToInrRatio: 1.0,
+    cashbackToGrainMultiplier: 1.5,
+    registrationsOpen: true
+  })
+  const [merchantsList, setMerchantsList] = useState([])
+
   // Passbook Dynamic Transactions State
   const [passbookList, setPassbookList] = useState([
     { id: 'tx-1', date: '22 Oct, 05:40 AM', desc: 'Daily Grain Harvest Spin Prize', cat: 'Spin Wheel', amount: '+50 Grains 🌾', isGrains: true, status: 'Settled' },
@@ -48,10 +60,34 @@ export default function App() {
     { id: 'tx-5', date: '14 Oct, 09:00 AM', desc: 'Colony Mound Activation Entry Fee', cat: 'Entry Fee', amount: '-123 Grains 🌾', isGrains: true, isNegative: true, status: 'Active' }
   ])
 
-  // Cashback state
+  // Cashback state & Dynamic Calculations
   const [monthlySpend, setMonthlySpend] = useState(12000)
   const [avgCashbackRate, setAvgCashbackRate] = useState(8)
   const [convertedGrains, setConvertedGrains] = useState(0)
+
+  const monthlyCashbackINR = Math.round((monthlySpend * avgCashbackRate) / 100)
+  const bonusGrainsFromCashback = Math.floor(monthlyCashbackINR * (colonyConfig?.cashbackToGrainMultiplier || 1.5))
+
+  // Fetch Live Configuration & Partner Merchants on Mount
+  useEffect(() => {
+    async function loadDynamicConfig() {
+      try {
+        const [settingsRes, merchantsRes] = await Promise.allSettled([
+          apiService.getColonySettings(),
+          apiService.getMerchants()
+        ])
+        if (settingsRes.status === 'fulfilled' && settingsRes.value) {
+          setColonyConfig(settingsRes.value)
+        }
+        if (merchantsRes.status === 'fulfilled' && Array.isArray(merchantsRes.value)) {
+          setMerchantsList(merchantsRes.value)
+        }
+      } catch (err) {
+        console.error('Failed to load initial configuration', err)
+      }
+    }
+    loadDynamicConfig()
+  }, [])
 
   // Auto-switch tab if URL contains ?tab= or ?ref=
   useEffect(() => {
@@ -65,24 +101,25 @@ export default function App() {
     }
   }, [])
 
-  // 10-Level Table Data for Ants & Grains
-  const levelTable = [
-    { level: 1, ants: 5, bonus: 100 },
-    { level: 2, ants: 25, bonus: 200 },
-    { level: 3, ants: 125, bonus: 300 },
-    { level: 4, ants: 625, bonus: 400 },
-    { level: 5, ants: 3125, bonus: 500 },
-    { level: 6, ants: 15625, bonus: 600 },
-    { level: 7, ants: 78125, bonus: 700 },
-    { level: 8, ants: 390625, bonus: 800 },
-    { level: 9, ants: 1953125, bonus: 900 },
-    { level: 10, ants: 9765625, bonus: 1000 },
-  ]
+  // Dynamic Level Table generated strictly from Admin Configurator parameters
+  const maxLevels = colonyConfig.maxLevelsPerBranch || 10
+  const multiplier = colonyConfig.levelExpansionMultiplier || 5
+  const directBonus = colonyConfig.directBonusGrains || 20
+  const entryFee = colonyConfig.entryFeeGrains || 123
 
-  // Colony calculations
-  const directGrains = directInvites * 20
+  const levelTable = Array.from({ length: maxLevels }, (_, i) => {
+    const lvl = i + 1
+    return {
+      level: lvl,
+      ants: Math.pow(multiplier, lvl),
+      bonus: lvl * 100
+    }
+  })
+
+  // Colony calculations (fully dynamic)
+  const directGrains = directInvites * directBonus
   const levelBonusPerBranch = levelTable
-    .slice(0, levelDepth)
+    .slice(0, Math.min(levelDepth, maxLevels))
     .reduce((sum, item) => sum + item.bonus, 0)
   const totalLevelGrains = levelBonusPerBranch * directInvites
   const totalHarvestGrains = directGrains + totalLevelGrains
@@ -93,21 +130,21 @@ export default function App() {
       status: 'Level 3 Active',
       activeLevel: 3,
       currentAnts: 155,
-      earned: 20 + 100 + 200 + 300,
+      earned: directBonus + 100 + 200 + 300,
     },
     mani: {
       name: 'Mani',
       status: 'Level 1 Active',
       activeLevel: 1,
       currentAnts: 5,
-      earned: 20 + 100,
+      earned: directBonus + 100,
     },
     kavi: {
       name: 'Kavi (New Invite)',
       status: 'Level 0 (Fresh Branch)',
       activeLevel: 0,
       currentAnts: 0,
-      earned: 20,
+      earned: directBonus,
     },
   }
 
@@ -520,31 +557,31 @@ export default function App() {
               </h1>
               <p className="hero-description">
                 {lang === 'ta'
-                  ? 'Ants & Grains enbadhu oru referral-based colony system. Ovvoru member-um pudhu members-ai invite pannalaam. Direct referral bonus (20 grains) matrum ovvoru direct member-oda keezhayum thani 10-level branch growth!'
-                  : 'A community-driven ant colony ecosystem. Invite friends with 20 grains direct bonus, and unlock independent 10-level branch charts that multiply by 5× at every stage.'}
+                  ? `Ants & Grains enbadhu oru referral-based colony system. Ovvoru member-um pudhu members-ai invite pannalaam. Direct referral bonus (${directBonus} grains) matrum ovvoru direct member-oda keezhayum thani ${maxLevels}-level branch growth!`
+                  : `A community-driven ant colony ecosystem. Invite friends with ${directBonus} grains direct bonus, and unlock independent ${maxLevels}-level branch charts that multiply by ${multiplier}× at every stage.`}
               </p>
             </div>
 
-            {/* Quick Metrics */}
+            {/* Quick Metrics (Dynamic from Admin Configurator) */}
             <div className="metrics-row">
               <div className="metric-card">
                 <div className="metric-icon">🪙</div>
-                <div className="metric-value">123</div>
+                <div className="metric-value">{entryFee}</div>
                 <div className="metric-label">{lang === 'ta' ? 'Joining / Entry Fee' : 'Colony Entry Fee'}</div>
               </div>
               <div className="metric-card">
                 <div className="metric-icon">🤝</div>
-                <div className="metric-value">+20</div>
+                <div className="metric-value">+{directBonus}</div>
                 <div className="metric-label">{lang === 'ta' ? 'Direct Referral Bonus' : 'Direct Referral Bonus'}</div>
               </div>
               <div className="metric-card">
                 <div className="metric-icon">📈</div>
-                <div className="metric-value">5×</div>
-                <div className="metric-label">{lang === 'ta' ? 'Level Growth Rate' : 'Level Expansion (5x)'}</div>
+                <div className="metric-value">{multiplier}×</div>
+                <div className="metric-label">{lang === 'ta' ? 'Level Growth Rate' : `Level Expansion (${multiplier}x)`}</div>
               </div>
               <div className="metric-card">
                 <div className="metric-icon">🪺</div>
-                <div className="metric-value">10</div>
+                <div className="metric-value">{maxLevels}</div>
                 <div className="metric-label">{lang === 'ta' ? 'Max Levels per Branch' : 'Max Levels per Branch'}</div>
               </div>
             </div>
@@ -585,7 +622,7 @@ export default function App() {
                     <input
                       type="range"
                       min="1"
-                      max="10"
+                      max={maxLevels}
                       value={levelDepth}
                       onChange={(e) => setLevelDepth(Number(e.target.value))}
                       className="colony-slider"
@@ -594,14 +631,14 @@ export default function App() {
 
                   <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                     {lang === 'ta'
-                      ? '💡 Note: Ovvoru direct referral-ukkum thaniya oru 10-level chart irukkum. Unlimited direct referrals panna mudiyum!'
-                      : '💡 Rule: Every direct referral gets their own isolated 10-level chart. Unlimited direct referrals are allowed!'}
+                      ? `💡 Note: Ovvoru direct referral-ukkum thaniya oru ${maxLevels}-level chart irukkum. Unlimited direct referrals panna mudiyum!`
+                      : `💡 Rule: Every direct referral gets their own isolated ${maxLevels}-level chart. Unlimited direct referrals are allowed!`}
                   </p>
                 </div>
 
                 <div className="calc-results">
                   <div className="calc-result-row">
-                    <span>{lang === 'ta' ? 'Direct Referral Bonus (20 per ant)' : 'Direct Bonus (20 grains / ant)'}</span>
+                    <span>{lang === 'ta' ? `Direct Referral Bonus (${directBonus} per ant)` : `Direct Bonus (${directBonus} grains / ant)`}</span>
                     <span className="calc-result-val">{directGrains.toLocaleString()} Grains</span>
                   </div>
                   <div className="calc-result-row">
@@ -720,11 +757,13 @@ export default function App() {
               </div>
             )}
 
-            {/* 10-Level Table */}
+            {/* Dynamic Multi-Level Growth Matrix Table */}
             <div className="growth-table-section">
               <div className="section-title-wrap">
                 <div className="section-tag">Colony Matrix</div>
-                <h2 className="section-title">{lang === 'ta' ? '10-நிலை வளர்ச்சி அட்டவணை' : '10-Level Reward & Growth Chart'}</h2>
+                <h2 className="section-title">
+                  {lang === 'ta' ? `${maxLevels}-நிலை வளர்ச்சி அட்டவணை` : `${maxLevels}-Level Reward & Growth Chart`}
+                </h2>
               </div>
 
               <div className="table-card">
@@ -743,7 +782,9 @@ export default function App() {
                         <td style={{ fontWeight: 800, color: 'var(--text-dark)' }}>Level {row.level}</td>
                         <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>{row.ants.toLocaleString()} Ants</td>
                         <td>
-                          <span className="growth-badge">{row.level === 1 ? '5 Direct Base' : '5× Madangu'}</span>
+                          <span className="growth-badge">
+                            {row.level === 1 ? `${multiplier} Direct Base` : `${multiplier}× Multiplier`}
+                          </span>
                         </td>
                         <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>+{row.bonus} Grains 🌾</td>
                       </tr>
@@ -753,7 +794,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Rules Cards */}
+            {/* Rules Cards (Live-Computed from Colony Configuration) */}
             <div className="rules-section">
               <div className="section-title-wrap">
                 <div className="section-tag">Guidelines</div>
@@ -766,8 +807,8 @@ export default function App() {
                   <h3 className="rule-title">{lang === 'ta' ? '🪙 Joining / Entry Fee' : '🪙 Colony Entry Fee'}</h3>
                   <p className="rule-desc">
                     {lang === 'ta'
-                      ? 'Ovvoru pudhu ant-um colony-la join panna 123 grains entry fee pay pannanum. Idhan moolam avargaloda sontha referral network-ai start pannalaam.'
-                      : 'Every ant contributes 123 grains as an entry fee to enter the colony and unlock their own referral network.'}
+                      ? `Ovvoru pudhu ant-um colony-la join panna ${entryFee} grains entry fee pay pannanum. Idhan moolam avargaloda sontha referral network-ai start pannalaam.`
+                      : `Every ant contributes ${entryFee} grains as an entry fee to enter the colony and unlock their own referral network.`}
                   </p>
                 </div>
 
@@ -776,18 +817,18 @@ export default function App() {
                   <h3 className="rule-title">{lang === 'ta' ? '🤝 Direct Referral Bonus' : '🤝 Direct Referral Bonus'}</h3>
                   <p className="rule-desc">
                     {lang === 'ta'
-                      ? 'Oru ant pudhu member-ai direct-aa invite pannina, 20 grains direct bonus kidaikkum. Unlimited direct referrals panna mudiyum! (Eg: 5 friends = 100 grains).'
-                      : 'Receive 20 grains immediately for every ant you directly invite. There is zero limit on direct referrals.'}
+                      ? `Oru ant pudhu member-ai direct-aa invite pannina, ${directBonus} grains direct bonus kidaikkum. Unlimited direct referrals panna mudiyum! (Eg: 5 friends = ${5 * directBonus} grains).`
+                      : `Receive ${directBonus} grains immediately for every ant you directly invite. There is zero limit on direct referrals.`}
                   </p>
                 </div>
 
                 <div className="rule-box">
                   <div className="rule-num">3</div>
-                  <h3 className="rule-title">{lang === 'ta' ? '🪺 Separate 10-Level Charts' : '🪺 Isolated 10-Level Trees'}</h3>
+                  <h3 className="rule-title">{lang === 'ta' ? `🪺 Separate ${maxLevels}-Level Charts` : `🪺 Isolated ${maxLevels}-Level Trees`}</h3>
                   <p className="rule-desc">
                     {lang === 'ta'
-                      ? 'Ovvoru direct referral-ukkum thanithaniyaana 10-level chart uruvaagum! Ramu Somu-vai invite pannina, Somu-ku thaniya oru chart, Mani-ku thaniya oru chart.'
-                      : 'Each direct invite starts their own independent 10-level tree. Branches progress and pay out separately without interfering with each other.'}
+                      ? `Ovvoru direct referral-ukkum thanithaniyaana ${maxLevels}-level chart uruvaagum! Ramu Somu-vai invite pannina, Somu-ku thaniya oru chart, Mani-ku thaniya oru chart.`
+                      : `Each direct invite starts their own independent ${maxLevels}-level tree. Branches progress and pay out separately without interfering with each other.`}
                   </p>
                 </div>
 
@@ -796,18 +837,18 @@ export default function App() {
                   <h3 className="rule-title">{lang === 'ta' ? '🌾 Ramu – Somu – 5 Friends Example' : '🌾 Financial Flow Example'}</h3>
                   <p className="rule-desc">
                     {lang === 'ta'
-                      ? 'Somu 5 friends-ai invite pannina: Somu-ku 5 × 20 = 100 grains direct bonus. Ramu-ku Level 1 bonus = 100 grains. 5 friends entry = 615 grains. Total payout = 200 grains. Colony balance = 415 grains.'
-                      : 'When 5 friends join under Somu, 615 grains are collected. Somu gets 100 grains direct, Ramu gets 100 grains Level 1, leaving 415 grains safely in reserve.'}
+                      ? `Somu 5 friends-ai invite pannina: Somu-ku 5 × ${directBonus} = ${5 * directBonus} grains direct bonus. Ramu-ku Level 1 bonus = 100 grains. 5 friends entry = ${5 * entryFee} grains. Total payout = ${5 * directBonus + 100} grains. Colony balance = ${5 * entryFee - (5 * directBonus + 100)} grains.`
+                      : `When 5 friends join under Somu, ${5 * entryFee} grains are collected. Somu gets ${5 * directBonus} grains direct, Ramu gets 100 grains Level 1, leaving ${5 * entryFee - (5 * directBonus + 100)} grains safely in reserve.`}
                   </p>
                 </div>
 
                 <div className="rule-box">
                   <div className="rule-num">5</div>
-                  <h3 className="rule-title">{lang === 'ta' ? '🔒 Level 10 Completion Cap' : '🔒 Level 10 Cap & Closure'}</h3>
+                  <h3 className="rule-title">{lang === 'ta' ? `🔒 Level ${maxLevels} Completion Cap` : `🔒 Level ${maxLevels} Cap & Closure`}</h3>
                   <p className="rule-desc">
                     {lang === 'ta'
-                      ? 'Oru branch Level 10 complete panna piragu, andha branch close aagum. Matra active branches thodarndhu bonus kodukkum. Pudhu direct referrals pudhu chart-ai thodangum.'
-                      : 'A branch gracefully retires after completing Level 10. All your other branches remain fully active, and new invites open new charts.'}
+                      ? `Oru branch Level ${maxLevels} complete panna piragu, andha branch close aagum. Matra active branches thodarndhu bonus kodukkum. Pudhu direct referrals pudhu chart-ai thodangum.`
+                      : `A branch gracefully retires after completing Level ${maxLevels}. All your other branches remain fully active, and new invites open new charts.`}
                   </p>
                 </div>
 
@@ -816,15 +857,15 @@ export default function App() {
                   <h3 className="rule-title">{lang === 'ta' ? '📌 Quick Summary' : '📌 Core Formula'}</h3>
                   <p className="rule-desc">
                     {lang === 'ta'
-                      ? '123 Grains entry • 20 Grains direct bonus • 5x level growth • 100-1000 grains level bonus • 10 levels maximum per branch.'
-                      : '123 Grains entry • 20 Grains direct bonus • 5x multiplier • 100-1,000 grains bonus • 10-level ceiling per branch.'}
+                      ? `${entryFee} Grains entry • ${directBonus} Grains direct bonus • ${multiplier}x level growth • 100-1000 grains level bonus • ${maxLevels} levels maximum per branch.`
+                      : `${entryFee} Grains entry • ${directBonus} Grains direct bonus • ${multiplier}x multiplier • 100-1,000 grains bonus • ${maxLevels}-level ceiling per branch.`}
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Feature 2: 1-Click Share & Digital QR Pass */}
-            <ColonyShareCard lang={lang} />
+            <ColonyShareCard lang={lang} colonyConfig={colonyConfig} />
           </section>
         )}
 
@@ -854,7 +895,7 @@ export default function App() {
               </h1>
               <p className="hero-description">
                 Earn instant cashback on your everyday purchases, electronics, bill payments, and flights.
-                Withdraw as real cash or convert directly into Colony Grains at a 1.5× bonus multiplier!
+                Withdraw as real cash or convert directly into Colony Grains at a {colonyConfig?.cashbackToGrainMultiplier || 1.5}× bonus multiplier!
               </p>
             </div>
 
@@ -918,7 +959,7 @@ export default function App() {
                   </span>
                 </div>
                 <div className="calc-result-row">
-                  <span>Convertible Colony Grains (1.5x)</span>
+                  <span>Convertible Colony Grains ({colonyConfig?.cashbackToGrainMultiplier || 1.5}x)</span>
                   <span className="calc-result-val" style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>
                     +{bonusGrainsFromCashback.toLocaleString()} Grains 🌾
                   </span>
@@ -933,57 +974,47 @@ export default function App() {
               </div>
             </div>
 
-            {/* Popular Partners Grid */}
+            {/* Live Partner Merchants Grid (Configured from Admin Desk) */}
             <div>
               <div className="section-title-wrap">
-                <div className="section-tag">Featured Merchant Deals</div>
-                <h2 className="section-title">Popular Cashback Categories</h2>
+                <div className="section-tag">Direct Affinovas Partner Deals</div>
+                <h2 className="section-title">Live Partner Stores & Cashback Rates</h2>
               </div>
 
               <div className="merchants-grid">
-                <div className="merchant-card">
-                  <div className="merchant-info">
-                    <div className="merchant-logo">📱</div>
-                    <div>
-                      <div className="merchant-name">Electronics & Gadgets</div>
-                      <div className="merchant-cat">Laptops, Phones & Accessories</div>
+                {merchantsList.filter((m) => m.isActive !== false).map((merchant) => (
+                  <div key={merchant.id} className="merchant-card">
+                    <div className="merchant-info">
+                      <div className="merchant-logo">{merchant.logo || '🛍️'}</div>
+                      <div>
+                        <div className="merchant-name">{merchant.name}</div>
+                        <div className="merchant-cat">{merchant.category}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
+                      <div className="merchant-cashback-rate">{merchant.cashbackRate}% Instant</div>
+                      <a
+                        href={merchant.redirectUrl || '#'}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="merchant-shop-link"
+                        style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          color: 'var(--emerald-deep)',
+                          textDecoration: 'none',
+                          background: '#ecfdf5',
+                          padding: '0.25rem 0.65rem',
+                          borderRadius: '6px',
+                          border: '1px solid #10b981'
+                        }}
+                        onClick={() => apiService.trackMerchantClick(merchant.id)}
+                      >
+                        Shop Now →
+                      </a>
                     </div>
                   </div>
-                  <div className="merchant-cashback-rate">Up to 8%</div>
-                </div>
-
-                <div className="merchant-card">
-                  <div className="merchant-info">
-                    <div className="merchant-logo">✈️</div>
-                    <div>
-                      <div className="merchant-name">Travel & Flight Bookings</div>
-                      <div className="merchant-cat">Hotels, Airlines & Holidays</div>
-                    </div>
-                  </div>
-                  <div className="merchant-cashback-rate">Up to 12%</div>
-                </div>
-
-                <div className="merchant-card">
-                  <div className="merchant-info">
-                    <div className="merchant-logo">🛍️</div>
-                    <div>
-                      <div className="merchant-name">Fashion & Apparel</div>
-                      <div className="merchant-cat">Top Brands & Footwear</div>
-                    </div>
-                  </div>
-                  <div className="merchant-cashback-rate">Up to 15%</div>
-                </div>
-
-                <div className="merchant-card">
-                  <div className="merchant-info">
-                    <div className="merchant-logo">⚡</div>
-                    <div>
-                      <div className="merchant-name">Utility Bills & Recharges</div>
-                      <div className="merchant-cat">Electricity, Mobile & Broadband</div>
-                    </div>
-                  </div>
-                  <div className="merchant-cashback-rate">Flat 5%</div>
-                </div>
+                ))}
               </div>
             </div>
           </section>
@@ -1138,14 +1169,15 @@ export default function App() {
                       toast.warning('Minimum ₹100 required to swap for Colony Grains.', 'Insufficient Cashback')
                       return
                     }
-                    const grainsWon = Math.floor(100 * 1.5)
+                    const swapMultiplier = colonyConfig?.cashbackToGrainMultiplier || 1.5
+                    const grainsWon = Math.floor(100 * swapMultiplier)
                     setCashbackBalance((prev) => prev - 100)
                     setUserGrains((prev) => prev + grainsWon)
                     setPassbookList((prev) => [
                       {
                         id: 'tx-' + Date.now(),
                         date: 'Just now',
-                        desc: 'Cashback Swapped → Grains (1.5× Multiplier)',
+                        desc: `Cashback Swapped → Grains (${swapMultiplier}× Multiplier)`,
                         cat: 'Swap',
                         amount: `+${grainsWon} Grains 🌾`,
                         isGrains: true,
@@ -1153,10 +1185,10 @@ export default function App() {
                       },
                       ...prev
                     ])
-                    toast.success(`Swapped ₹100 Cashback for +${grainsWon} Colony Grains (1.5× Multiplier applied)!`, 'Grains Multiplied 🌾')
+                    toast.success(`Swapped ₹100 Cashback for +${grainsWon} Colony Grains (${swapMultiplier}× Multiplier applied)!`, 'Grains Multiplied 🌾')
                   }}
                 >
-                  🔄 Swap ₹100 Cashback → 150 Grains (1.5× Bonus)
+                  🔄 Swap ₹100 Cashback → {Math.floor(100 * (colonyConfig?.cashbackToGrainMultiplier || 1.5))} Grains ({colonyConfig?.cashbackToGrainMultiplier || 1.5}× Bonus)
                 </button>
                 <button
                   className="module-tab-btn"
@@ -1236,7 +1268,11 @@ export default function App() {
         {/* TAB 6: MASTER OPERATOR DESK (ADMIN SIDE)                 */}
         {/* ======================================================== */}
         {activeTab === 'admin' && (
-          <AdminDashboard onExitAdmin={() => setActiveTab('home')} />
+          <AdminDashboard
+            onExitAdmin={() => setActiveTab('home')}
+            onSettingsUpdated={(newSettings) => setColonyConfig(newSettings)}
+            onMerchantsUpdated={(newList) => setMerchantsList(newList)}
+          />
         )}
       </main>
 
@@ -1258,9 +1294,10 @@ export default function App() {
         initialMode={authMode}
         onLoginSuccess={(u) => {
           setCurrentUser(u)
-          setUserGrains(u.grains)
+          setUserGrains(u.grainsBalance || 1840)
         }}
         lang={lang}
+        colonyConfig={colonyConfig}
       />
 
       {/* Global Interactive Prompt & Confirmation Modal */}
