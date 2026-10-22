@@ -1,31 +1,53 @@
+/* ======================================================== */
+/* AFFINOVAS — EMERALD OASIS & CHAMPAGNE DESIGN SYSTEM     */
+/* (The "Wealth & Harvest" Grand Bright Theme)              */
+/* ======================================================== */
+
 :root {
   --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
-  /* Earthy, Warm, Organic Colony Palette */
-  --bg-deep: #120e0a;
-  --bg-soil: #1a150f;
-  --bg-card: rgba(33, 27, 20, 0.82);
-  --bg-card-hover: rgba(45, 37, 27, 0.95);
-  --border-earth: rgba(217, 119, 6, 0.2);
-  --border-earth-glow: rgba(245, 158, 11, 0.45);
+  /* Bright Grand Canvas */
+  --bg-canvas: #f7faf8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-tint: #f0f7f3;
+  --bg-surface-muted: #e8f3ed;
 
-  /* Grains & Honey Accents */
-  --grain-gold: #f59e0b;
-  --grain-honey: #fbbf24;
-  --grain-light: #fef3c7;
-  --grain-amber: #d97706;
+  /* Imperial Emerald Palette */
+  --emerald-deep: #064e3b;
+  --emerald-primary: #047857;
+  --emerald-vibrant: #059669;
+  --emerald-light: #10b981;
+  --emerald-pale: #ecfdf5;
+  --emerald-glow: rgba(5, 150, 105, 0.16);
 
-  /* Leaf & Life Greens */
-  --sprout-green: #10b981;
-  --sprout-dark: #065f46;
-  --sprout-glow: rgba(16, 185, 129, 0.25);
+  /* Champagne & Imperial Gold Accents */
+  --champagne-gold: #d97706;
+  --champagne-amber: #f59e0b;
+  --champagne-honey: #fbbf24;
+  --champagne-soft: #fef3c7;
+  --champagne-glow: rgba(217, 119, 6, 0.2);
 
-  /* Textures and Text */
-  --text-primary: #fffbeb;
-  --text-secondary: #d6cfbe;
-  --text-muted: #9e9585;
-  --text-grain: #fbbf24;
+  /* Borders & Dividers */
+  --border-emerald: rgba(4, 120, 87, 0.14);
+  --border-emerald-glow: rgba(5, 150, 105, 0.35);
+  --border-champagne: rgba(217, 119, 6, 0.22);
+  --border-subtle: #e5e7eb;
+
+  /* High-Contrast Typography */
+  --text-dark: #0f172a;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-emerald: #047857;
+  --text-champagne: #b45309;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 20px rgba(6, 78, 59, 0.07);
+  --shadow-lg: 0 12px 36px rgba(6, 78, 59, 0.1);
+  --shadow-gold: 0 8px 24px rgba(217, 119, 6, 0.18);
 }
 
 * {
@@ -37,7 +59,7 @@
 html, body {
   width: 100%;
   min-height: 100%;
-  background-color: var(--bg-deep);
+  background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -47,15 +69,16 @@ html, body {
 
 body {
   background-image:
-    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(245, 158, 11, 0.15), transparent),
-    radial-gradient(ellipse 60% 30% at 80% 50%, rgba(16, 185, 129, 0.08), transparent),
-    radial-gradient(ellipse 60% 40% at 20% 75%, rgba(217, 119, 6, 0.1), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.1), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 40%, rgba(245, 158, 11, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 10% 70%, rgba(5, 150, 105, 0.08), transparent);
   background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  color: var(--text-dark);
 }
 
 button {
@@ -75,12 +98,12 @@ a {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-deep);
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(245, 158, 11, 0.3);
+  background: rgba(4, 120, 87, 0.25);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 158, 11, 0.6);
+  background: rgba(4, 120, 87, 0.5);
 }

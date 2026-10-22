@@ -1,11 +1,11 @@
-/* Daily Spin Wheel & Ant Ranks Styles */
+/* Daily Spin Wheel & Ant Ranks — Emerald Oasis & Champagne Theme */
 .spin-wheel-container {
-  background: linear-gradient(145deg, rgba(38, 30, 20, 0.95), rgba(24, 18, 12, 0.98));
-  border: 2px solid var(--border-earth-glow);
+  background: #ffffff;
+  border: 2px solid rgba(4, 120, 87, 0.15);
   border-radius: 24px;
   padding: 2.5rem;
   margin-bottom: 4.5rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-md);
 }
 
 .spin-wheel-header {
@@ -14,15 +14,15 @@
   gap: 1.25rem;
   margin-bottom: 2.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-earth);
+  border-bottom: 1px solid var(--border-emerald);
 }
 
 .spin-icon-badge {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid var(--grain-gold);
+  background: #f0fdf4;
+  border: 1px solid rgba(16, 185, 129, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,8 +31,8 @@
 
 .spin-section-title {
   font-size: 1.85rem;
-  font-weight: 800;
-  color: #fff;
+  font-weight: 900;
+  color: var(--text-dark);
   margin-bottom: 0.35rem;
 }
 
@@ -71,9 +71,9 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
-  color: #f59e0b;
-  font-size: 1.6rem;
-  filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.8));
+  color: var(--champagne-gold);
+  font-size: 1.8rem;
+  filter: drop-shadow(0 2px 6px rgba(217, 119, 6, 0.6));
 }
 
 .wheel-disk {
@@ -82,8 +82,8 @@
   border-radius: 50%;
   position: relative;
   overflow: hidden;
-  border: 4px solid var(--grain-gold);
-  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+  border: 6px solid #064e3b;
+  box-shadow: 0 8px 30px rgba(6, 78, 59, 0.25);
   transition: transform 4s cubic-bezier(0.15, 0.9, 0.2, 1);
 }
 
@@ -106,54 +106,54 @@
   left: 15px;
   transform: rotate(45deg);
   font-size: 0.72rem;
-  font-weight: 800;
-  color: #fff;
+  font-weight: 900;
+  color: #ffffff;
   white-space: nowrap;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .wheel-center-hub {
   position: absolute;
-  width: 76px;
-  height: 76px;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--grain-gold), var(--grain-amber));
+  background: linear-gradient(135deg, var(--champagne-amber), var(--champagne-gold));
   color: #120e0a;
-  border: 4px solid #fff;
-  font-size: 1.1rem;
+  border: 4px solid #ffffff;
+  font-size: 1.15rem;
   font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
   z-index: 5;
   transition: all 0.2s ease;
 }
 
 .wheel-center-hub:hover:not(.disabled) {
   transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.6);
+  box-shadow: 0 6px 24px rgba(217, 119, 6, 0.45);
 }
 
 .wheel-center-hub.disabled {
   opacity: 0.85;
   cursor: not-allowed;
-  background: #4b3e2a;
-  color: #fff;
+  background: #94a3b8;
+  color: #ffffff;
 }
 
 .spin-won-celebration {
-  background: rgba(16, 185, 129, 0.18);
-  border: 1px solid #10b981;
-  color: #34d399;
+  background: #ecfdf5;
+  border: 1px solid var(--emerald-light);
+  color: var(--emerald-deep);
   padding: 0.85rem 1.5rem;
   border-radius: 12px;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 800;
   text-align: center;
-  animation: pulseGlow 1.5s infinite alternate;
   margin-top: 0.5rem;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
 }
 
 .next-spin-timer-box {
@@ -169,17 +169,17 @@
 .demo-reset-btn {
   background: transparent;
   border: none;
-  color: var(--grain-honey);
-  font-size: 0.8rem;
-  font-weight: 700;
+  color: var(--emerald-deep);
+  font-size: 0.82rem;
+  font-weight: 800;
   cursor: pointer;
   text-decoration: underline;
 }
 
 /* Ranks Column */
 .ranks-card {
-  background: rgba(18, 14, 10, 0.75);
-  border: 1px solid var(--border-earth);
+  background: var(--bg-surface-tint);
+  border: 1px solid var(--border-emerald);
   border-radius: 20px;
   padding: 1.75rem;
 }
@@ -194,7 +194,7 @@
 .ranks-tag {
   font-size: 0.78rem;
   font-weight: 800;
-  color: var(--grain-gold);
+  color: var(--emerald-deep);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -204,9 +204,9 @@
   font-weight: 800;
   padding: 0.25rem 0.65rem;
   border-radius: 9999px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid var(--border-earth-glow);
-  color: var(--grain-honey);
+  background: #ecfdf5;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--emerald-deep);
 }
 
 .ranks-description {
@@ -228,18 +228,19 @@
   gap: 0.85rem;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .rank-tier-item.current-tier {
-  border-color: var(--grain-gold);
-  background: rgba(245, 158, 11, 0.12);
+  border-color: var(--emerald-primary);
+  background: #f0fdf4;
 }
 
 .rank-tier-item.locked {
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 .rank-tier-icon {
@@ -256,15 +257,15 @@
   gap: 0.5rem;
   font-size: 0.95rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-dark);
 }
 
 .active-pill {
   font-size: 0.65rem;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
-  background: var(--grain-gold);
-  color: #120e0a;
+  background: var(--emerald-deep);
+  color: #ffffff;
   font-weight: 800;
 }
 
@@ -275,17 +276,17 @@
 
 .rank-tier-status {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-muted);
 }
 
 .rank-tier-item.unlocked .rank-tier-status {
-  color: #34d399;
+  color: var(--emerald-deep);
 }
 
 .rank-next-milestone {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 0.9rem;
 }
@@ -294,7 +295,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
@@ -302,14 +303,14 @@
 .milestone-bar {
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #e2e8f0;
   border-radius: 3px;
   overflow: hidden;
 }
 
 .milestone-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--grain-gold), #34d399);
+  background: linear-gradient(90deg, var(--emerald-primary), var(--champagne-gold));
 }
 
 @media (max-width: 800px) {
