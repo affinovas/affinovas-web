@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ColonyTreeVisualizer from './components/ColonyTreeVisualizer'
+import ColonyShareCard from './components/ColonyShareCard'
 import './App.css'
 
 export default function App() {
@@ -627,34 +628,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Share link generator */}
-            <div className="link-generator-card">
-              <h2>{lang === 'ta' ? '🌾 உங்கள் நேரடி Referral Link-ஐ உருவாக்குங்கள்' : '🌾 Generate Your Ant Referral Link'}</h2>
-              <p>
-                {lang === 'ta'
-                  ? 'Ungal Ant ID / Name-ai enter panni link-ai copy pannunga. Friends-idam share panni 20 grains per direct invite earn pannunga!'
-                  : 'Enter your Ant handle to generate a custom invite URL. Share with fellow ants to harvest 20 grains per direct referral!'}
-              </p>
-
-              <div className="link-input-row">
-                <input
-                  type="text"
-                  className="ant-id-input"
-                  value={antName}
-                  onChange={(e) => setAntName(e.target.value)}
-                  placeholder="Enter Ant Handle (e.g. Ant_Ramu)"
-                />
-                <button className="copy-btn" onClick={handleCopyLink}>
-                  {copied ? 'Copied! 🌾' : 'Copy Invite Link'}
-                </button>
-              </div>
-
-              {copied && (
-                <div className="copy-toast">
-                  ✓ Link copied: https://affinovas.online?tab=colony&ref={encodeURIComponent(antName || 'AntMember')}
-                </div>
-              )}
-            </div>
+            {/* Feature 2: 1-Click Share & Digital QR Pass */}
+            <ColonyShareCard lang={lang} />
           </section>
         )}
 
