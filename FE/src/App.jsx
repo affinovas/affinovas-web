@@ -3,26 +3,47 @@ import ColonyTreeVisualizer from './components/ColonyTreeVisualizer'
 import ColonyShareCard from './components/ColonyShareCard'
 import DailySpinWheel from './components/DailySpinWheel'
 import AuthModal from './components/AuthModal'
+import AdminDashboard from './components/AdminDashboard'
+import { apiService } from './services/apiService'
 import './App.css'
 
 export default function App() {
-  // Navigation: 'home' | 'colony' | 'cashback' | 'services' | 'vault'
+  // Navigation: 'home' | 'colony' | 'cashback' | 'services' | 'vault' | 'admin'
   const [activeTab, setActiveTab] = useState('home')
   const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
 
-  // Auth state (Feature 4)
+  // Auth state & User Session
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login') // 'login' | 'register'
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(() => apiService.getCurrentUser() || {
+    id: '22222222-2222-2222-2222-222222222222',
+    name: 'Ramu AntLeader',
+    email: 'ramu@affinovas.com',
+    role: 'member',
+    referralCode: 'AFF-RAMU',
+    grainsBalance: 1840,
+    cashbackBalance: 450.0,
+    upiId: 'ramu@okhdfcbank'
+  })
 
   // Ants & Grains state
   const [userGrains, setUserGrains] = useState(1840)
+  const [cashbackBalance, setCashbackBalance] = useState(450)
   const [colonySubTab, setColonySubTab] = useState('tree') // 'tree' | 'explorer'
   const [directInvites, setDirectInvites] = useState(5)
   const [levelDepth, setLevelDepth] = useState(3)
   const [selectedBranch, setSelectedBranch] = useState('somu')
   const [antName, setAntName] = useState('Ant_Ramu')
   const [copied, setCopied] = useState(false)
+
+  // Passbook Dynamic Transactions State
+  const [passbookList, setPassbookList] = useState([
+    { id: 'tx-1', date: '22 Oct, 05:40 AM', desc: 'Daily Grain Harvest Spin Prize', cat: 'Spin Wheel', amount: '+50 Grains 🌾', isGrains: true, status: 'Settled' },
+    { id: 'tx-2', date: '21 Oct, 08:15 PM', desc: 'Direct Referral Bonus: Mani joined', cat: 'Colony Direct', amount: '+20 Grains 🌾', isGrains: true, status: 'Settled' },
+    { id: 'tx-3', date: '20 Oct, 02:30 PM', desc: 'Flipkart Partner Shopping Cashback', cat: 'Cashback', amount: '+₹120.00', isGrains: false, status: 'Confirmed' },
+    { id: 'tx-4', date: '18 Oct, 11:20 AM', desc: "Level 1 Bonus: Somu's 5 Ants Completed", cat: 'Branch Bonus', amount: '+100 Grains 🌾', isGrains: true, status: 'Settled' },
+    { id: 'tx-5', date: '14 Oct, 09:00 AM', desc: 'Colony Mound Activation Entry Fee', cat: 'Entry Fee', amount: '-123 Grains 🌾', isGrains: true, isNegative: true, status: 'Active' }
+  ])
 
   // Cashback state
   const [monthlySpend, setMonthlySpend] = useState(12000)
@@ -94,12 +115,83 @@ export default function App() {
     setTimeout(() => setCopied(false), 3000)
   }
 
-  // Cashback calculations
-  const monthlyCashbackINR = (monthlySpend * avgCashbackRate) / 100
-  const bonusGrainsFromCashback = Math.floor(monthlyCashbackINR * 1.5)
+  // Handle Member Payout Request
+  const handleRequestWithdrawal = async () => {
+    const defaultUpi = currentUser?.upiId || 'ramu@okhdfcbank'
+    const upi = prompt('Enter your UPI ID to receive instant payout (e.g. name@okhdfcbank):', defaultUpi)
+    if (!upi) return
+
+    const amountStr = prompt('Enter withdrawal amount (₹):', String(cashbackBalance))
+    if (!amountStr || isNaN(amountStr)) return
+    const amount = Number(amountStr)
+    if (amount <= 0 || amount > cashbackBalance) {
+      alert(`Invalid amount. You have ₹${cashbackBalance} available.`)
+      return
+    }
+
+    try {
+      const res = await apiService.requestWithdrawal({
+        userId: currentUser?.id || '22222222-2222-2222-2222-222222222222',
+        userEmail: currentUser?.email || 'ramu@affinovas.com',
+        userName: currentUser?.name || 'Ramu AntLeader',
+        amount,
+        upiId: upi
+      })
+
+      setCashbackBalance((prev) => Math.max(0, prev - amount))
+      setPassbookList((prev) => [
+        {
+          id: 'tx-' + Date.now(),
+          date: 'Just now',
+          desc: `Payout Request to ${upi}`,
+          cat: 'Withdrawal',
+          amount: `-₹${amount.toFixed(2)}`,
+          isGrains: false,
+          isNegative: true,
+          status: 'Pending Clearance'
+        },
+        ...prev
+      ])
+
+      alert(`✓ Payout of ₹${amount} submitted!\nThis request is now live on the Operator Admin Desk.`)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
 
   return (
     <div className="affinovas-app">
+      {/* Multi-Portal Experience Switcher Ribbon */}
+      <div className="role-switch-ribbon">
+        <div className="role-switch-content">
+          <span>🌐 Affinovas Multi-Portal System (Admin Side & User Side):</span>
+          <div className="role-switch-buttons">
+            <button
+              className={`role-pill ${currentUser?.role !== 'admin' && activeTab !== 'admin' ? 'active-member' : ''}`}
+              onClick={() => {
+                apiService.login('ramu@affinovas.com', 'ramu123').then((d) => {
+                  setCurrentUser(d.user)
+                  setActiveTab('home')
+                })
+              }}
+            >
+              🐜 Member Portal (User Side: Ramu)
+            </button>
+            <button
+              className={`role-pill ${currentUser?.role === 'admin' || activeTab === 'admin' ? 'active-admin' : ''}`}
+              onClick={() => {
+                apiService.login('admin@affinovas.com', 'admin123').then((d) => {
+                  setCurrentUser(d.user)
+                  setActiveTab('admin')
+                })
+              }}
+            >
+              👑 Operator Deck (Admin Side)
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Master Top Navigation Bar */}
       <header className="master-nav">
         <div className="brand-section" onClick={() => setActiveTab('home')}>
@@ -144,6 +236,25 @@ export default function App() {
           >
             💼 Vault
           </button>
+
+          {/* Operator Desk Tab */}
+          <button
+            className={`module-tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
+            style={{
+              color: activeTab === 'admin' ? 'var(--emerald-deep)' : '#047857',
+              fontWeight: 900,
+              border: '1px solid rgba(4, 120, 87, 0.3)',
+              background: activeTab === 'admin' ? '#ffffff' : '#f0fdf4'
+            }}
+            onClick={() => {
+              if (currentUser?.role !== 'admin') {
+                apiService.login('admin@affinovas.com', 'admin123').then((d) => setCurrentUser(d.user))
+              }
+              setActiveTab('admin')
+            }}
+          >
+            🛡️ Admin Desk
+          </button>
         </nav>
 
         {/* Quick User / Wallet Indicator & Auth */}
@@ -151,18 +262,21 @@ export default function App() {
           <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')}>
             <span>🌾 {userGrains.toLocaleString()} Grains</span>
             <span style={{ opacity: 0.6 }}>|</span>
-            <span style={{ color: 'var(--emerald-primary)', fontWeight: 800 }}>₹450</span>
+            <span style={{ color: 'var(--emerald-primary)', fontWeight: 800 }}>₹{cashbackBalance}</span>
           </div>
 
           {currentUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div className="wallet-quick-badge" style={{ borderColor: 'var(--champagne-gold)', color: 'var(--text-dark)' }}>
-                <span>🐜 {currentUser.name}</span>
+                <span>{currentUser.role === 'admin' ? '👑 Admin' : `🐜 ${currentUser.name}`}</span>
               </div>
               <button
                 className="mini-lang-btn"
                 style={{ padding: '0.4rem 0.7rem' }}
-                onClick={() => setCurrentUser(null)}
+                onClick={() => {
+                  apiService.logout()
+                  setCurrentUser(null)
+                }}
               >
                 Logout
               </button>
@@ -949,7 +1063,7 @@ export default function App() {
                 <div className="vault-bal-card">
                   <div className="vault-bal-title">Cashback Wallet</div>
                   <div className="vault-bal-amount" style={{ color: 'var(--emerald-deep)', fontWeight: 900 }}>
-                    ₹450.00
+                    ₹{cashbackBalance.toFixed(2)}
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
                     Available for withdrawal or swap
@@ -972,23 +1086,36 @@ export default function App() {
                 <button
                   className="nav-cta"
                   style={{ background: 'linear-gradient(135deg, var(--emerald-primary), var(--emerald-deep))', color: '#fff' }}
-                  onClick={() => {
-                    const upi = prompt('Enter your UPI ID (e.g. yourname@okhdfcbank):', 'antmember@upi')
-                    if (upi) {
-                      alert(`✓ Withdrawal of ₹450 initiated to ${upi}! Funds usually arrive within 15-30 minutes.`)
-                    }
-                  }}
+                  onClick={handleRequestWithdrawal}
                 >
-                  ⚡ Instant Withdraw to UPI (₹450)
+                  ⚡ Instant Withdraw to UPI (₹{cashbackBalance})
                 </button>
                 <button
                   className="nav-cta"
                   onClick={() => {
-                    setUserGrains((prev) => prev + 150)
-                    alert('✓ Swapped ₹100 Cashback for +150 Colony Grains (1.5× Multiplier applied)!')
+                    if (cashbackBalance < 100) {
+                      alert('Minimum ₹100 required to swap for Colony Grains.')
+                      return
+                    }
+                    const grainsWon = Math.floor(100 * 1.5)
+                    setCashbackBalance((prev) => prev - 100)
+                    setUserGrains((prev) => prev + grainsWon)
+                    setPassbookList((prev) => [
+                      {
+                        id: 'tx-' + Date.now(),
+                        date: 'Just now',
+                        desc: 'Cashback Swapped → Grains (1.5× Multiplier)',
+                        cat: 'Swap',
+                        amount: `+${grainsWon} Grains 🌾`,
+                        isGrains: true,
+                        status: 'Settled'
+                      },
+                      ...prev
+                    ])
+                    alert(`✓ Swapped ₹100 Cashback for +${grainsWon} Colony Grains (1.5× Multiplier applied)!`)
                   }}
                 >
-                  🔄 Swap Cashback → Grains (1.5× Bonus)
+                  🔄 Swap ₹100 Cashback → 150 Grains (1.5× Bonus)
                 </button>
                 <button
                   className="module-tab-btn"
@@ -1022,47 +1149,53 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td style={{ color: 'var(--text-muted)' }}>22 Oct, 05:40 AM</td>
-                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Daily Grain Harvest Spin Prize</td>
-                        <td><span className="growth-badge">Spin Wheel</span></td>
-                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>+50 Grains 🌾</td>
-                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Settled</td>
-                      </tr>
-                      <tr>
-                        <td style={{ color: 'var(--text-muted)' }}>21 Oct, 08:15 PM</td>
-                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Direct Referral Bonus: Mani joined</td>
-                        <td><span className="growth-badge">Colony Direct</span></td>
-                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>+20 Grains 🌾</td>
-                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Settled</td>
-                      </tr>
-                      <tr>
-                        <td style={{ color: 'var(--text-muted)' }}>20 Oct, 02:30 PM</td>
-                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Flipkart Partner Shopping Cashback</td>
-                        <td><span className="growth-badge" style={{ color: '#0369a1', borderColor: 'rgba(3,105,161,0.3)', background: '#f0f9ff' }}>Cashback</span></td>
-                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>+₹120.00</td>
-                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Confirmed</td>
-                      </tr>
-                      <tr>
-                        <td style={{ color: 'var(--text-muted)' }}>18 Oct, 11:20 AM</td>
-                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Level 1 Bonus: Somu's 5 Ants Completed</td>
-                        <td><span className="growth-badge">Branch Bonus</span></td>
-                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>+100 Grains 🌾</td>
-                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Settled</td>
-                      </tr>
-                      <tr>
-                        <td style={{ color: 'var(--text-muted)' }}>14 Oct, 09:00 AM</td>
-                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Colony Mound Activation Entry Fee</td>
-                        <td><span className="growth-badge" style={{ color: '#b91c1c', borderColor: 'rgba(185,28,28,0.3)', background: '#fef2f2' }}>Entry Fee</span></td>
-                        <td style={{ color: '#b91c1c', fontWeight: 800 }}>-123 Grains 🌾</td>
-                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Active</td>
-                      </tr>
+                      {passbookList.map((tx) => (
+                        <tr key={tx.id}>
+                          <td style={{ color: 'var(--text-muted)' }}>{tx.date}</td>
+                          <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{tx.desc}</td>
+                          <td>
+                            <span
+                              className="growth-badge"
+                              style={{
+                                color: tx.cat === 'Withdrawal' ? '#b45309' : tx.cat === 'Cashback' ? '#0369a1' : 'var(--emerald-deep)',
+                                background: tx.cat === 'Withdrawal' ? '#fef3c7' : tx.cat === 'Cashback' ? '#f0f9ff' : '#ecfdf5',
+                                borderColor: tx.cat === 'Withdrawal' ? '#fde68a' : tx.cat === 'Cashback' ? 'rgba(3,105,161,0.3)' : 'rgba(16, 185, 129, 0.35)'
+                              }}
+                            >
+                              {tx.cat}
+                            </span>
+                          </td>
+                          <td
+                            style={{
+                              fontWeight: 800,
+                              color: tx.isNegative ? '#b91c1c' : tx.isGrains ? 'var(--champagne-gold)' : 'var(--emerald-deep)'
+                            }}
+                          >
+                            {tx.amount}
+                          </td>
+                          <td
+                            style={{
+                              fontWeight: 700,
+                              color: tx.status.includes('Pending') ? '#b45309' : 'var(--emerald-deep)'
+                            }}
+                          >
+                            {tx.status}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             </div>
           </section>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 6: MASTER OPERATOR DESK (ADMIN SIDE)                 */}
+        {/* ======================================================== */}
+        {activeTab === 'admin' && (
+          <AdminDashboard onExitAdmin={() => setActiveTab('home')} />
         )}
       </main>
 

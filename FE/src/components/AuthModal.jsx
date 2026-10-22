@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { apiService } from '../services/apiService'
 import './AuthModal.css'
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLoginSuccess, lang = 'ta' }) {
@@ -21,24 +22,41 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
 
   if (!isOpen) return null
 
-  const handleSubmit = (e) => {
+  const handleQuickFill = (email, pwd) => {
+    setIdentifier(email)
+    setPassword(pwd)
+    setError('')
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    setTimeout(() => {
+    try {
+      if (mode === 'login') {
+        const data = await apiService.login(identifier, password)
+        if (onLoginSuccess) {
+          onLoginSuccess(data.user)
+        }
+        onClose()
+      } else {
+        const data = await apiService.register({
+          email: identifier,
+          password,
+          name: antName || 'Ant_Member',
+          referralCode: refCode
+        })
+        if (onLoginSuccess) {
+          onLoginSuccess(data.user)
+        }
+        onClose()
+      }
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please check credentials.')
+    } finally {
       setLoading(false)
-      const user = {
-        name: mode === 'register' ? antName || 'Ant_NewMember' : identifier || 'Ant_Ramu',
-        id: `ANT_${Math.floor(1000 + Math.random() * 9000)}`,
-        grains: mode === 'register' ? 20 : 1840,
-        cashback: mode === 'register' ? 0 : 450,
-      }
-      if (onLoginSuccess) {
-        onLoginSuccess(user)
-      }
-      onClose()
-    }, 900)
+    }
   }
 
   return (
@@ -50,19 +68,44 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
           <div className="auth-brand-badge">🐜</div>
           <h2 className="auth-title">
             {mode === 'login'
-              ? lang === 'ta' ? 'காலனி உள்நுழைவு' : 'Member Colony Login'
+              ? lang === 'ta' ? 'காலனி உள்நுழைவு' : 'Member & Admin Login'
               : lang === 'ta' ? 'புதிய எறும்பு பதிவு' : 'Join Affinovas Colony'}
           </h2>
           <p className="auth-sub">
             {mode === 'login'
               ? lang === 'ta'
                 ? 'உங்கள் கணக்கில் உள்நுழைந்து தானியங்களை கண்காணிக்கவும்'
-                : 'Access your ant profile, branch networks & wallet'
+                : 'Access your Ant member profile or Master Admin command deck'
               : lang === 'ta'
                 ? '123 தானியங்கள் நுழைவுக் கட்டணத்துடன் காலனியில் இணையுங்கள்'
                 : 'Unlock your 10-level referral branch with 123 grains entry'}
           </p>
         </div>
+
+        {/* Quick Demo Fill Pills */}
+        {mode === 'login' && (
+          <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '12px', padding: '0.75rem', marginBottom: '1.25rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>
+              ⚡ Quick Test Credentials:
+            </span>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => handleQuickFill('admin@affinovas.com', 'admin123')}
+                style={{ padding: '0.35rem 0.7rem', background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, color: '#064e3b', cursor: 'pointer' }}
+              >
+                👑 Master Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickFill('ramu@affinovas.com', 'ramu123')}
+                style={{ padding: '0.35rem 0.7rem', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800, color: '#b45309', cursor: 'pointer' }}
+              >
+                🐜 Member (Ramu)
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Mode Switcher */}
         <div className="auth-mode-tabs">
@@ -101,12 +144,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
 
           <div className="auth-input-group">
             <label className="auth-label">
-              {mode === 'register' ? 'Mobile Number / Email' : 'Ant Handle or Mobile'}
+              {mode === 'register' ? 'Email / Mobile' : 'Email Address'}
             </label>
             <input
               type="text"
               className="auth-input"
-              placeholder={mode === 'register' ? '+91 98765 43210' : 'Enter Ant ID / Mobile'}
+              placeholder="e.g. ramu@affinovas.com"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
@@ -134,7 +177,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
               <input
                 type="text"
                 className="auth-input"
-                placeholder="e.g. ANT_FOUNDER"
+                placeholder="e.g. AFF-RAMU"
                 value={refCode}
                 onChange={(e) => setRefCode(e.target.value)}
               />
@@ -148,7 +191,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
             {loading ? (
               'Authenticating...'
             ) : mode === 'login' ? (
-              'Enter Colony →'
+              'Enter Colony Portal →'
             ) : (
               'Activate Ant Profile (123 Grains) →'
             )}
