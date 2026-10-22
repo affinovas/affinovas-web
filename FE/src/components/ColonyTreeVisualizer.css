@@ -1,0 +1,426 @@
+/* Colony Tree Visualizer Styles */
+.tree-visualizer-container {
+  background: linear-gradient(145deg, rgba(38, 30, 20, 0.95), rgba(24, 18, 12, 0.98));
+  border: 2px solid var(--border-earth-glow);
+  border-radius: 24px;
+  padding: 2.5rem;
+  margin-bottom: 4.5rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.tree-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-earth);
+}
+
+.tree-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+
+.tree-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.tree-stats-badge {
+  display: flex;
+  gap: 1.25rem;
+  background: rgba(18, 14, 10, 0.7);
+  border: 1px solid var(--border-earth);
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.tree-stats-badge strong {
+  color: var(--grain-honey);
+}
+
+/* Layout Grid */
+.tree-layout-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Tree Canvas Panel */
+.tree-canvas-panel {
+  background: rgba(18, 14, 10, 0.7);
+  border: 1px solid var(--border-earth);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.tree-level-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.tree-node {
+  background: rgba(33, 27, 20, 0.9);
+  border: 1px solid var(--border-earth);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  user-select: none;
+}
+
+.tree-node:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-earth-glow);
+  transform: translateY(-3px);
+}
+
+.tree-node.selected {
+  border-color: var(--grain-gold);
+  background: rgba(245, 158, 11, 0.16);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.root-node {
+  border: 2px solid var(--grain-gold);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(38, 30, 20, 0.95));
+  padding: 1.1rem 1.8rem;
+}
+
+.node-crown {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.1rem;
+}
+
+.node-avatar {
+  font-size: 1.6rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.node-name {
+  font-weight: 800;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.node-tag {
+  font-size: 0.75rem;
+  color: var(--grain-honey);
+  font-weight: 600;
+}
+
+.node-pill {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--grain-honey);
+  font-weight: 700;
+  border: 1px solid var(--border-earth);
+}
+
+/* Connector Stems */
+.tree-connector-stem {
+  position: relative;
+  width: 2px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--grain-gold), rgba(245, 158, 11, 0.2));
+  margin: 0.5rem 0;
+}
+
+.stem-glow-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--grain-gold);
+  box-shadow: 0 0 8px var(--grain-gold);
+}
+
+/* Branches Row */
+.branches-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.branch-node {
+  flex: 1;
+  min-width: 140px;
+  flex-direction: column;
+  text-align: center;
+  padding: 1rem 0.85rem;
+}
+
+.branch-node.expanded {
+  border-color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.node-badge-level {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--grain-honey);
+  margin-bottom: 0.35rem;
+}
+
+.node-stat-pill {
+  font-size: 0.78rem;
+  color: var(--grain-light);
+  font-weight: 600;
+  margin-top: 0.4rem;
+}
+
+/* Sub-Tree Wrapper */
+.sub-tree-wrapper {
+  width: 100%;
+  border-top: 1px dashed rgba(245, 158, 11, 0.3);
+  padding-top: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.sub-tree-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--grain-honey);
+}
+
+.sub-tree-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+}
+
+.sub-nodes-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+  gap: 0.65rem;
+}
+
+.sub-node {
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.node-avatar-sm {
+  font-size: 1.1rem;
+}
+
+.node-name-sm {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.node-ants-sm {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.node-grains-sm {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--grain-honey);
+}
+
+.empty-sub-branch {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border-earth);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Right Inspector Panel */
+.node-inspector-panel {
+  background: rgba(18, 14, 10, 0.85);
+  border: 1px solid var(--border-earth);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.inspector-tag {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--grain-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.inspector-status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.inspector-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inspector-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(33, 27, 20, 0.8));
+  border: 1px solid var(--border-earth-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.inspector-name {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.inspector-role {
+  font-size: 0.85rem;
+  color: var(--grain-honey);
+  font-weight: 600;
+}
+
+.inspector-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.inspector-metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.inspector-metric-card .metric-title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.inspector-metric-card .metric-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--grain-honey);
+}
+
+/* Branch Progress Meter */
+.branch-progress-meter {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.meter-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+}
+
+.meter-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--grain-gold), #34d399);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.meter-footnote {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .tree-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import ColonyTreeVisualizer from './components/ColonyTreeVisualizer'
 import './App.css'
 
 export default function App() {
@@ -7,6 +8,7 @@ export default function App() {
   const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
 
   // Ants & Grains state
+  const [colonySubTab, setColonySubTab] = useState('tree') // 'tree' | 'explorer'
   const [directInvites, setDirectInvites] = useState(5)
   const [levelDepth, setLevelDepth] = useState(3)
   const [selectedBranch, setSelectedBranch] = useState('somu')
@@ -429,73 +431,98 @@ export default function App() {
               </div>
             </div>
 
-            {/* Visual Branch Explorer Demo */}
-            <div className="branch-explorer">
-              <div className="explorer-header">
-                <h2>{lang === 'ta' ? '🐜 தனியான பிராஞ்ச் இயக்கம் (Ramu - Somu & Mani Example)' : '🐜 Independent Branch Isolation Explorer'}</h2>
-                <p>
-                  {lang === 'ta'
-                    ? 'Ramu invite panna Somu matrum Mani-ku thanithani 10-level charts eppadi work aagudhu endru paarunga:'
-                    : 'See how Ramu’s direct invites (Somu and Mani) run independent 10-level charts simultaneously:'}
-                </p>
-              </div>
-
-              <div className="branch-tabs">
-                <button
-                  className={`branch-tab-btn ${selectedBranch === 'somu' ? 'active' : ''}`}
-                  onClick={() => setSelectedBranch('somu')}
-                >
-                  🌿 Somu’s Branch (Level 3)
-                </button>
-                <button
-                  className={`branch-tab-btn ${selectedBranch === 'mani' ? 'active' : ''}`}
-                  onClick={() => setSelectedBranch('mani')}
-                >
-                  🌿 Mani’s Branch (Level 1)
-                </button>
-                <button
-                  className={`branch-tab-btn ${selectedBranch === 'kavi' ? 'active' : ''}`}
-                  onClick={() => setSelectedBranch('kavi')}
-                >
-                  🌱 Kavi’s Branch (Fresh)
-                </button>
-              </div>
-
-              <div className="branch-card-preview">
-                <div className="branch-meta-row">
-                  <div className="branch-name">
-                    <span>🐜 {branches[selectedBranch].name}</span>
-                    <span className="branch-status-badge">{branches[selectedBranch].status}</span>
-                  </div>
-                  <div style={{ color: '#fbbf24', fontWeight: 700 }}>
-                    {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains
-                  </div>
-                </div>
-
-                <div className="branch-levels-view">
-                  {levelTable.map((lvl) => {
-                    const isUnlocked = lvl.level <= branches[selectedBranch].activeLevel
-                    const isCurrent = lvl.level === branches[selectedBranch].activeLevel
-                    return (
-                      <div
-                        key={lvl.level}
-                        className={`level-chip ${isUnlocked ? 'unlocked' : ''} ${isCurrent ? 'active-level' : ''}`}
-                      >
-                        <div className="level-num">Level {lvl.level}</div>
-                        <div className="level-ants">{lvl.ants.toLocaleString()} Ants</div>
-                        <div className="level-bonus">+{lvl.bonus} Grains</div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#9e9585', textAlign: 'center' }}>
-                  {lang === 'ta'
-                    ? '🔒 Somu-oda branch Level 10 complete aanaal andha branch close aagum. Aana Mani-oda branch thodarndhu active-aa irukkum!'
-                    : '🔒 When Somu’s branch reaches Level 10, only Somu’s chart closes. Mani’s branch continues operating independently!'}
-                </p>
-              </div>
+            {/* Feature 1: Hierarchy View Switcher */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1.75rem' }}>
+              <button
+                className={`module-tab-btn ${colonySubTab === 'tree' ? 'active' : ''}`}
+                style={{ padding: '0.65rem 1.4rem', fontSize: '0.95rem' }}
+                onClick={() => setColonySubTab('tree')}
+              >
+                🌳 {lang === 'ta' ? 'வரைபட மரம் (Visual Tree)' : 'Interactive Tree Map'}
+              </button>
+              <button
+                className={`module-tab-btn ${colonySubTab === 'explorer' ? 'active' : ''}`}
+                style={{ padding: '0.65rem 1.4rem', fontSize: '0.95rem' }}
+                onClick={() => setColonySubTab('explorer')}
+              >
+                📊 {lang === 'ta' ? 'பிராஞ்ச் நிலைகள் (Branch Levels)' : 'Branch Level Progress'}
+              </button>
             </div>
+
+            {/* Tree View (Feature 1) */}
+            {colonySubTab === 'tree' && (
+              <ColonyTreeVisualizer lang={lang} />
+            )}
+
+            {/* Visual Branch Explorer Demo */}
+            {colonySubTab === 'explorer' && (
+              <div className="branch-explorer">
+                <div className="explorer-header">
+                  <h2>{lang === 'ta' ? '🐜 தனியான பிராஞ்ச் இயக்கம் (Ramu - Somu & Mani Example)' : '🐜 Independent Branch Isolation Explorer'}</h2>
+                  <p>
+                    {lang === 'ta'
+                      ? 'Ramu invite panna Somu matrum Mani-ku thanithani 10-level charts eppadi work aagudhu endru paarunga:'
+                      : 'See how Ramu’s direct invites (Somu and Mani) run independent 10-level charts simultaneously:'}
+                  </p>
+                </div>
+
+                <div className="branch-tabs">
+                  <button
+                    className={`branch-tab-btn ${selectedBranch === 'somu' ? 'active' : ''}`}
+                    onClick={() => setSelectedBranch('somu')}
+                  >
+                    🌿 Somu’s Branch (Level 3)
+                  </button>
+                  <button
+                    className={`branch-tab-btn ${selectedBranch === 'mani' ? 'active' : ''}`}
+                    onClick={() => setSelectedBranch('mani')}
+                  >
+                    🌿 Mani’s Branch (Level 1)
+                  </button>
+                  <button
+                    className={`branch-tab-btn ${selectedBranch === 'kavi' ? 'active' : ''}`}
+                    onClick={() => setSelectedBranch('kavi')}
+                  >
+                    🌱 Kavi’s Branch (Fresh)
+                  </button>
+                </div>
+
+                <div className="branch-card-preview">
+                  <div className="branch-meta-row">
+                    <div className="branch-name">
+                      <span>🐜 {branches[selectedBranch].name}</span>
+                      <span className="branch-status-badge">{branches[selectedBranch].status}</span>
+                    </div>
+                    <div style={{ color: '#fbbf24', fontWeight: 700 }}>
+                      {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains
+                    </div>
+                  </div>
+
+                  <div className="branch-levels-view">
+                    {levelTable.map((lvl) => {
+                      const isUnlocked = lvl.level <= branches[selectedBranch].activeLevel
+                      const isCurrent = lvl.level === branches[selectedBranch].activeLevel
+                      return (
+                        <div
+                          key={lvl.level}
+                          className={`level-chip ${isUnlocked ? 'unlocked' : ''} ${isCurrent ? 'active-level' : ''}`}
+                        >
+                          <div className="level-num">Level {lvl.level}</div>
+                          <div className="level-ants">{lvl.ants.toLocaleString()} Ants</div>
+                          <div className="level-bonus">+{lvl.bonus} Grains</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#9e9585', textAlign: 'center' }}>
+                    {lang === 'ta'
+                      ? '🔒 Somu-oda branch Level 10 complete aanaal andha branch close aagum. Aana Mani-oda branch thodarndhu active-aa irukkum!'
+                      : '🔒 When Somu’s branch reaches Level 10, only Somu’s chart closes. Mani’s branch continues operating independently!'}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* 10-Level Table */}
             <div className="growth-table-section">
