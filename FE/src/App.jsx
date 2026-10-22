@@ -151,12 +151,12 @@ export default function App() {
           <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')}>
             <span>🌾 {userGrains.toLocaleString()} Grains</span>
             <span style={{ opacity: 0.6 }}>|</span>
-            <span style={{ color: '#34d399' }}>₹450</span>
+            <span style={{ color: 'var(--emerald-primary)', fontWeight: 800 }}>₹450</span>
           </div>
 
           {currentUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div className="wallet-quick-badge" style={{ borderColor: 'var(--grain-gold)', color: '#fff' }}>
+              <div className="wallet-quick-badge" style={{ borderColor: 'var(--champagne-gold)', color: 'var(--text-dark)' }}>
                 <span>🐜 {currentUser.name}</span>
               </div>
               <button
@@ -237,7 +237,7 @@ export default function App() {
               >
                 <div>
                   <div className="pillar-icon-box">💸</div>
-                  <span className="pillar-badge" style={{ color: '#34d399', background: 'rgba(16, 185, 129, 0.15)' }}>
+                  <span className="pillar-badge" style={{ color: 'var(--emerald-deep)', background: '#ecfdf5', borderColor: '#10b981' }}>
                     Instant Savings
                   </span>
                   <h3 className="pillar-title">Cashback & Smart Deals</h3>
@@ -247,7 +247,7 @@ export default function App() {
                   </p>
                 </div>
                 <div className="pillar-action-row">
-                  <span className="pillar-highlight" style={{ color: '#34d399' }}>Up to 25% Rebate</span>
+                  <span className="pillar-highlight" style={{ color: 'var(--emerald-primary)' }}>Up to 25% Rebate</span>
                   <span className="pillar-btn">Explore Deals →</span>
                 </div>
               </div>
@@ -260,7 +260,7 @@ export default function App() {
               >
                 <div>
                   <div className="pillar-icon-box">⚡</div>
-                  <span className="pillar-badge" style={{ color: '#38bdf8', background: 'rgba(6, 182, 212, 0.15)' }}>
+                  <span className="pillar-badge" style={{ color: '#0369a1', background: '#f0f9ff', borderColor: '#38bdf8' }}>
                     Enterprise Tech
                   </span>
                   <h3 className="pillar-title">Digital & Cloud Engineering</h3>
@@ -270,7 +270,7 @@ export default function App() {
                   </p>
                 </div>
                 <div className="pillar-action-row">
-                  <span className="pillar-highlight" style={{ color: '#38bdf8' }}>.NET & Cloud Ready</span>
+                  <span className="pillar-highlight" style={{ color: '#0369a1' }}>.NET & Cloud Ready</span>
                   <span className="pillar-btn">View Services →</span>
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function App() {
               >
                 <div>
                   <div className="pillar-icon-box">💼</div>
-                  <span className="pillar-badge" style={{ color: '#c084fc', background: 'rgba(139, 92, 246, 0.15)' }}>
+                  <span className="pillar-badge" style={{ color: '#7e22ce', background: '#faf5ff', borderColor: '#c084fc' }}>
                     Multi-Asset
                   </span>
                   <h3 className="pillar-title">Unified Member Vault</h3>
@@ -293,7 +293,7 @@ export default function App() {
                   </p>
                 </div>
                 <div className="pillar-action-row">
-                  <span className="pillar-highlight" style={{ color: '#c084fc' }}>Zero Fee Swap</span>
+                  <span className="pillar-highlight" style={{ color: '#7e22ce' }}>Zero Fee Swap</span>
                   <span className="pillar-btn">Open Vault →</span>
                 </div>
               </div>
@@ -437,7 +437,7 @@ export default function App() {
                     />
                   </div>
 
-                  <p style={{ fontSize: '0.88rem', color: '#9e9585', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                     {lang === 'ta'
                       ? '💡 Note: Ovvoru direct referral-ukkum thaniya oru 10-level chart irukkum. Unlimited direct referrals panna mudiyum!'
                       : '💡 Rule: Every direct referral gets their own isolated 10-level chart. Unlimited direct referrals are allowed!'}
@@ -534,8 +534,8 @@ export default function App() {
                       <span>🐜 {branches[selectedBranch].name}</span>
                       <span className="branch-status-badge">{branches[selectedBranch].status}</span>
                     </div>
-                    <div style={{ color: '#fbbf24', fontWeight: 700 }}>
-                      {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains
+                    <div style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>
+                      {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains 🌾
                     </div>
                   </div>
 
@@ -556,7 +556,7 @@ export default function App() {
                     })}
                   </div>
 
-                  <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#9e9585', textAlign: 'center' }}>
+                  <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
                     {lang === 'ta'
                       ? '🔒 Somu-oda branch Level 10 complete aanaal andha branch close aagum. Aana Mani-oda branch thodarndhu active-aa irukkum!'
                       : '🔒 When Somu’s branch reaches Level 10, only Somu’s chart closes. Mani’s branch continues operating independently!'}
@@ -585,12 +585,12 @@ export default function App() {
                   <tbody>
                     {levelTable.map((row) => (
                       <tr key={row.level}>
-                        <td style={{ fontWeight: 800, color: '#fff' }}>Level {row.level}</td>
-                        <td style={{ color: '#fbbf24', fontWeight: 700 }}>{row.ants.toLocaleString()} Ants</td>
+                        <td style={{ fontWeight: 800, color: 'var(--text-dark)' }}>Level {row.level}</td>
+                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>{row.ants.toLocaleString()} Ants</td>
                         <td>
                           <span className="growth-badge">{row.level === 1 ? '5 Direct Base' : '5× Madangu'}</span>
                         </td>
-                        <td style={{ color: '#34d399', fontWeight: 700 }}>+{row.bonus} Grains</td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>+{row.bonus} Grains 🌾</td>
                       </tr>
                     ))}
                   </tbody>
@@ -682,18 +682,18 @@ export default function App() {
               <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
                 ← Back to Affinovas Hub
               </button>
-              <span style={{ fontSize: '0.85rem', color: '#34d399', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--emerald-deep)', fontWeight: 800 }}>
                 ✓ Live Partner Stores Active
               </span>
             </div>
 
             <div className="cashback-hero">
-              <div className="portal-pill" style={{ borderColor: 'rgba(16, 185, 129, 0.4)', color: '#34d399' }}>
+              <div className="portal-pill" style={{ borderColor: 'rgba(16, 185, 129, 0.4)', color: 'var(--emerald-deep)' }}>
                 <span>💸 AFFINOVAS CASHBACK & REWARDS HUB</span>
               </div>
               <h1 className="hero-heading">
                 Shop Anywhere. <br />
-                <span className="gold-text" style={{ background: 'linear-gradient(135deg, #a7f3d0, #34d399, #059669)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span className="gold-text" style={{ background: 'linear-gradient(135deg, var(--emerald-deep) 0%, var(--emerald-primary) 50%, var(--champagne-gold) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Earn Real Cash & Multiply Grains.
                 </span>
               </h1>
@@ -706,7 +706,7 @@ export default function App() {
             {/* Interactive Cashback Simulator */}
             <div className="cashback-calc-card">
               <div>
-                <h3 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.4rem', color: 'var(--text-dark)', fontWeight: 800, marginBottom: '0.5rem' }}>
                   Cashback & Grain Simulator
                 </h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '1.5rem' }}>
@@ -716,7 +716,7 @@ export default function App() {
                 <div className="slider-group">
                   <div className="slider-label">
                     <span>Monthly Shopping & Recharges</span>
-                    <span className="slider-value-pill" style={{ color: '#34d399', borderColor: '#10b981' }}>
+                    <span className="slider-value-pill" style={{ color: 'var(--emerald-deep)', background: '#ecfdf5', borderColor: '#10b981' }}>
                       ₹{monthlySpend.toLocaleString()}
                     </span>
                   </div>
@@ -734,7 +734,7 @@ export default function App() {
                 <div className="slider-group">
                   <div className="slider-label">
                     <span>Average Partner Cashback Rate</span>
-                    <span className="slider-value-pill" style={{ color: '#34d399', borderColor: '#10b981' }}>
+                    <span className="slider-value-pill" style={{ color: 'var(--emerald-deep)', background: '#ecfdf5', borderColor: '#10b981' }}>
                       {avgCashbackRate}%
                     </span>
                   </div>
@@ -752,26 +752,26 @@ export default function App() {
               <div className="calc-results" style={{ borderColor: 'rgba(16, 185, 129, 0.3)' }}>
                 <div className="calc-result-row">
                   <span>Monthly Estimated Cashback</span>
-                  <span className="calc-result-val" style={{ color: '#34d399', fontSize: '1.2rem' }}>
+                  <span className="calc-result-val" style={{ color: 'var(--emerald-deep)', fontSize: '1.25rem', fontWeight: 900 }}>
                     ₹{monthlyCashbackINR.toLocaleString()}
                   </span>
                 </div>
                 <div className="calc-result-row">
                   <span>Annual Accumulated Savings</span>
-                  <span className="calc-result-val" style={{ color: '#fff' }}>
+                  <span className="calc-result-val" style={{ color: 'var(--text-dark)', fontWeight: 800 }}>
                     ₹{(monthlyCashbackINR * 12).toLocaleString()}
                   </span>
                 </div>
                 <div className="calc-result-row">
                   <span>Convertible Colony Grains (1.5x)</span>
-                  <span className="calc-result-val" style={{ color: 'var(--grain-honey)' }}>
+                  <span className="calc-result-val" style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>
                     +{bonusGrainsFromCashback.toLocaleString()} Grains 🌾
                   </span>
                 </div>
 
-                <div className="total-harvest-box" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.1))', borderColor: '#10b981' }}>
-                  <div className="total-title" style={{ color: '#a7f3d0' }}>Cashback Earnings Wallet</div>
-                  <div className="total-grains" style={{ color: '#34d399' }}>
+                <div className="total-harvest-box" style={{ background: 'linear-gradient(135deg, #064e3b, #047857)', borderColor: 'var(--champagne-amber)', boxShadow: '0 8px 24px rgba(6, 78, 59, 0.25)' }}>
+                  <div className="total-title" style={{ color: '#a7f3d0', fontWeight: 800 }}>Cashback Earnings Wallet</div>
+                  <div className="total-grains" style={{ color: 'var(--champagne-honey)', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
                     ₹{monthlyCashbackINR.toLocaleString()}
                   </div>
                 </div>
@@ -843,18 +843,18 @@ export default function App() {
               <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
                 ← Back to Affinovas Hub
               </button>
-              <span style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 800 }}>
                 Enterprise Grade Solutions
               </span>
             </div>
 
             <div className="portal-hero">
-              <div className="portal-pill" style={{ borderColor: 'rgba(6, 182, 212, 0.4)', color: '#38bdf8' }}>
+              <div className="portal-pill" style={{ borderColor: 'rgba(2, 132, 199, 0.4)', color: '#0369a1' }}>
                 <span>⚡ AFFINOVAS DIGITAL ENGINEERING</span>
               </div>
               <h1 className="hero-heading">
                 Scalable Cloud Architectures. <br />
-                <span className="gold-text" style={{ background: 'linear-gradient(135deg, #bae6fd, #38bdf8, #0284c7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span className="gold-text" style={{ background: 'linear-gradient(135deg, var(--emerald-deep) 0%, #0284c7 50%, var(--champagne-gold) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Built for High Performance.
                 </span>
               </h1>
@@ -913,18 +913,18 @@ export default function App() {
               <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
                 ← Back to Affinovas Hub
               </button>
-              <span style={{ fontSize: '0.85rem', color: '#c084fc', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.85rem', color: '#7e22ce', fontWeight: 800 }}>
                 Unified Multi-Asset Wallet
               </span>
             </div>
 
             <div className="portal-hero">
-              <div className="portal-pill" style={{ borderColor: 'rgba(139, 92, 246, 0.4)', color: '#c084fc' }}>
+              <div className="portal-pill" style={{ borderColor: 'rgba(126, 34, 206, 0.4)', color: '#7e22ce' }}>
                 <span>💼 AFFINOVAS UNIFIED VAULT</span>
               </div>
               <h1 className="hero-heading">
                 One Wallet. <br />
-                <span className="gold-text" style={{ background: 'linear-gradient(135deg, #e9d5ff, #c084fc, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span className="gold-text" style={{ background: 'linear-gradient(135deg, var(--emerald-deep) 0%, #7e22ce 50%, var(--champagne-gold) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Total Asset Transparency.
                 </span>
               </h1>
@@ -938,7 +938,7 @@ export default function App() {
               <div className="vault-balances-row">
                 <div className="vault-bal-card">
                   <div className="vault-bal-title">Colony Grains Balance</div>
-                  <div className="vault-bal-amount" style={{ color: 'var(--grain-honey)' }}>
+                  <div className="vault-bal-amount" style={{ color: 'var(--champagne-gold)', fontWeight: 900 }}>
                     1,840 🌾
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
@@ -948,7 +948,7 @@ export default function App() {
 
                 <div className="vault-bal-card">
                   <div className="vault-bal-title">Cashback Wallet</div>
-                  <div className="vault-bal-amount" style={{ color: '#34d399' }}>
+                  <div className="vault-bal-amount" style={{ color: 'var(--emerald-deep)', fontWeight: 900 }}>
                     ₹450.00
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
@@ -958,7 +958,7 @@ export default function App() {
 
                 <div className="vault-bal-card">
                   <div className="vault-bal-title">Active Referral Branches</div>
-                  <div className="vault-bal-amount" style={{ color: '#38bdf8' }}>
+                  <div className="vault-bal-amount" style={{ color: '#0369a1', fontWeight: 900 }}>
                     3 Branches
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
@@ -971,7 +971,7 @@ export default function App() {
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2.5rem' }}>
                 <button
                   className="nav-cta"
-                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}
+                  style={{ background: 'linear-gradient(135deg, var(--emerald-primary), var(--emerald-deep))', color: '#fff' }}
                   onClick={() => {
                     const upi = prompt('Enter your UPI ID (e.g. yourname@okhdfcbank):', 'antmember@upi')
                     if (upi) {
@@ -992,7 +992,7 @@ export default function App() {
                 </button>
                 <button
                   className="module-tab-btn"
-                  style={{ border: '1px solid var(--border-earth)', color: '#fff' }}
+                  style={{ border: '1px solid var(--border-emerald)', color: 'var(--emerald-deep)', background: '#ffffff', boxShadow: 'var(--shadow-sm)' }}
                   onClick={() => setActiveTab('colony')}
                 >
                   🐜 Open Ants & Grains Colony →
@@ -1000,12 +1000,12 @@ export default function App() {
               </div>
 
               {/* Feature 4: Passbook & Audit Ledger */}
-              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '2rem' }}>
+              <div style={{ borderTop: '1px solid var(--border-emerald)', paddingTop: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1.25rem', color: '#fff', fontWeight: 800 }}>
+                  <h3 style={{ fontSize: '1.25rem', color: 'var(--text-dark)', fontWeight: 800 }}>
                     📜 Vault Passbook & Transaction Ledger
                   </h3>
-                  <span style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 700 }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--emerald-primary)', fontWeight: 800 }}>
                     ✓ Immutable Cryptographic Audit Log
                   </span>
                 </div>
@@ -1024,38 +1024,38 @@ export default function App() {
                     <tbody>
                       <tr>
                         <td style={{ color: 'var(--text-muted)' }}>22 Oct, 05:40 AM</td>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>Daily Grain Harvest Spin Prize</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Daily Grain Harvest Spin Prize</td>
                         <td><span className="growth-badge">Spin Wheel</span></td>
-                        <td style={{ color: 'var(--grain-honey)', fontWeight: 800 }}>+50 Grains 🌾</td>
-                        <td style={{ color: '#34d399', fontWeight: 700 }}>Settled</td>
+                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>+50 Grains 🌾</td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Settled</td>
                       </tr>
                       <tr>
                         <td style={{ color: 'var(--text-muted)' }}>21 Oct, 08:15 PM</td>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>Direct Referral Bonus: Mani joined</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Direct Referral Bonus: Mani joined</td>
                         <td><span className="growth-badge">Colony Direct</span></td>
-                        <td style={{ color: 'var(--grain-honey)', fontWeight: 800 }}>+20 Grains 🌾</td>
-                        <td style={{ color: '#34d399', fontWeight: 700 }}>Settled</td>
+                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>+20 Grains 🌾</td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Settled</td>
                       </tr>
                       <tr>
                         <td style={{ color: 'var(--text-muted)' }}>20 Oct, 02:30 PM</td>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>Flipkart Partner Shopping Cashback</td>
-                        <td><span className="growth-badge" style={{ color: '#38bdf8', borderColor: 'rgba(6,182,212,0.4)', background: 'rgba(6,182,212,0.1)' }}>Cashback</span></td>
-                        <td style={{ color: '#34d399', fontWeight: 800 }}>+₹120.00</td>
-                        <td style={{ color: '#34d399', fontWeight: 700 }}>Confirmed</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Flipkart Partner Shopping Cashback</td>
+                        <td><span className="growth-badge" style={{ color: '#0369a1', borderColor: 'rgba(3,105,161,0.3)', background: '#f0f9ff' }}>Cashback</span></td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>+₹120.00</td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Confirmed</td>
                       </tr>
                       <tr>
                         <td style={{ color: 'var(--text-muted)' }}>18 Oct, 11:20 AM</td>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>Level 1 Bonus: Somu's 5 Ants Completed</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Level 1 Bonus: Somu's 5 Ants Completed</td>
                         <td><span className="growth-badge">Branch Bonus</span></td>
-                        <td style={{ color: 'var(--grain-honey)', fontWeight: 800 }}>+100 Grains 🌾</td>
-                        <td style={{ color: '#34d399', fontWeight: 700 }}>Settled</td>
+                        <td style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>+100 Grains 🌾</td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Settled</td>
                       </tr>
                       <tr>
                         <td style={{ color: 'var(--text-muted)' }}>14 Oct, 09:00 AM</td>
-                        <td style={{ fontWeight: 700, color: '#fff' }}>Colony Mound Activation Entry Fee</td>
-                        <td><span className="growth-badge" style={{ color: '#f43f5e', borderColor: 'rgba(244,63,94,0.4)', background: 'rgba(244,63,94,0.1)' }}>Entry Fee</span></td>
-                        <td style={{ color: '#f87171', fontWeight: 800 }}>-123 Grains 🌾</td>
-                        <td style={{ color: '#34d399', fontWeight: 700 }}>Active</td>
+                        <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>Colony Mound Activation Entry Fee</td>
+                        <td><span className="growth-badge" style={{ color: '#b91c1c', borderColor: 'rgba(185,28,28,0.3)', background: '#fef2f2' }}>Entry Fee</span></td>
+                        <td style={{ color: '#b91c1c', fontWeight: 800 }}>-123 Grains 🌾</td>
+                        <td style={{ color: 'var(--emerald-deep)', fontWeight: 800 }}>Active</td>
                       </tr>
                     </tbody>
                   </table>
