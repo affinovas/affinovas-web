@@ -4,6 +4,8 @@ import ColonyShareCard from './components/ColonyShareCard'
 import DailySpinWheel from './components/DailySpinWheel'
 import AuthModal from './components/AuthModal'
 import AdminDashboard from './components/AdminDashboard'
+import PromptModal from './components/PromptModal'
+import { ToastContainer, toast } from './components/Toast'
 import { apiService } from './services/apiService'
 import './App.css'
 
@@ -11,6 +13,7 @@ export default function App() {
   // Navigation: 'home' | 'colony' | 'cashback' | 'services' | 'vault' | 'admin'
   const [activeTab, setActiveTab] = useState('home')
   const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
+  const [promptConfig, setPromptConfig] = useState(null)
 
   // Auth state & User Session
   const [authModalOpen, setAuthModalOpen] = useState(false)
@@ -112,51 +115,70 @@ export default function App() {
     const link = `https://affinovas.online?tab=colony&ref=${encodeURIComponent(antName || 'AntMember')}`
     navigator.clipboard?.writeText(link)
     setCopied(true)
+    toast.success('Colony invitation pass link copied to clipboard!', 'Link Copied')
     setTimeout(() => setCopied(false), 3000)
   }
 
-  // Handle Member Payout Request
-  const handleRequestWithdrawal = async () => {
-    const defaultUpi = currentUser?.upiId || 'ramu@okhdfcbank'
-    const upi = prompt('Enter your UPI ID to receive instant payout (e.g. name@okhdfcbank):', defaultUpi)
-    if (!upi) return
-
-    const amountStr = prompt('Enter withdrawal amount (₹):', String(cashbackBalance))
-    if (!amountStr || isNaN(amountStr)) return
-    const amount = Number(amountStr)
-    if (amount <= 0 || amount > cashbackBalance) {
-      alert(`Invalid amount. You have ₹${cashbackBalance} available.`)
+  // Handle Member Payout Request with Custom Modal
+  const handleRequestWithdrawal = () => {
+    if (cashbackBalance <= 0) {
+      toast.warning('Your Cashback Wallet is currently empty.', 'Zero Balance')
       return
     }
 
-    try {
-      const res = await apiService.requestWithdrawal({
-        userId: currentUser?.id || '22222222-2222-2222-2222-222222222222',
-        userEmail: currentUser?.email || 'ramu@affinovas.com',
-        userName: currentUser?.name || 'Ramu AntLeader',
-        amount,
-        upiId: upi
-      })
+    const defaultUpi = currentUser?.upiId || 'ramu@okhdfcbank'
+    setPromptConfig({
+      title: '⚡ Instant UPI Payout Request',
+      subtitle: 'Transfer available cashback directly to your bank account via UPI',
+      icon: '💸',
+      type: 'default',
+      detailLabel: 'Withdrawal Balance:',
+      detailValue: `₹${cashbackBalance.toFixed(2)}`,
+      inputLabel: 'Enter your UPI ID (VPA)',
+      initialValue: defaultUpi,
+      placeholder: 'e.g. yourname@okhdfcbank',
+      submitText: `Transfer ₹${cashbackBalance} to Bank →`,
+      onSubmit: async (upi) => {
+        if (!upi || !upi.includes('@')) {
+          toast.error('Please enter a valid UPI address (e.g. name@bank)', 'Invalid UPI')
+          return
+        }
 
-      setCashbackBalance((prev) => Math.max(0, prev - amount))
-      setPassbookList((prev) => [
-        {
-          id: 'tx-' + Date.now(),
-          date: 'Just now',
-          desc: `Payout Request to ${upi}`,
-          cat: 'Withdrawal',
-          amount: `-₹${amount.toFixed(2)}`,
-          isGrains: false,
-          isNegative: true,
-          status: 'Pending Clearance'
-        },
-        ...prev
-      ])
+        setPromptConfig(null)
+        try {
+          const res = await apiService.requestWithdrawal({
+            userId: currentUser?.id || '22222222-2222-2222-2222-222222222222',
+            userEmail: currentUser?.email || 'ramu@affinovas.com',
+            userName: currentUser?.name || 'Ramu AntLeader',
+            amount: cashbackBalance,
+            upiId: upi
+          })
 
-      alert(`✓ Payout of ₹${amount} submitted!\nThis request is now live on the Operator Admin Desk.`)
-    } catch (err) {
-      alert(err.message)
-    }
+          const amt = cashbackBalance
+          setCashbackBalance(0)
+          setPassbookList((prev) => [
+            {
+              id: 'tx-' + Date.now(),
+              date: 'Just now',
+              desc: `Payout Request to ${upi}`,
+              cat: 'Withdrawal',
+              amount: `-₹${amt.toFixed(2)}`,
+              isGrains: false,
+              isNegative: true,
+              status: 'Pending Clearance'
+            },
+            ...prev
+          ])
+
+          toast.success(
+            `Payout of ₹${amt} submitted to ${upi}!\nThis request is now live on the Operator Admin Desk.`,
+            'Payout Request Sent'
+          )
+        } catch (err) {
+          toast.error(err.message, 'Withdrawal Failed')
+        }
+      }
+    })
   }
 
   return (
@@ -1094,7 +1116,7 @@ export default function App() {
                   className="nav-cta"
                   onClick={() => {
                     if (cashbackBalance < 100) {
-                      alert('Minimum ₹100 required to swap for Colony Grains.')
+                      toast.warning('Minimum ₹100 required to swap for Colony Grains.', 'Insufficient Cashback')
                       return
                     }
                     const grainsWon = Math.floor(100 * 1.5)
@@ -1112,7 +1134,7 @@ export default function App() {
                       },
                       ...prev
                     ])
-                    alert(`✓ Swapped ₹100 Cashback for +${grainsWon} Colony Grains (1.5× Multiplier applied)!`)
+                    toast.success(`Swapped ₹100 Cashback for +${grainsWon} Colony Grains (1.5× Multiplier applied)!`, 'Grains Multiplied 🌾')
                   }}
                 >
                   🔄 Swap ₹100 Cashback → 150 Grains (1.5× Bonus)
@@ -1221,6 +1243,18 @@ export default function App() {
         }}
         lang={lang}
       />
+
+      {/* Global Interactive Prompt & Confirmation Modal */}
+      {promptConfig && (
+        <PromptModal
+          isOpen={!!promptConfig}
+          onClose={() => setPromptConfig(null)}
+          {...promptConfig}
+        />
+      )}
+
+      {/* Global Toast Notification System */}
+      <ToastContainer />
     </div>
   )
 }

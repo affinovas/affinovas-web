@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { apiService } from '../services/apiService'
+import PromptModal from './PromptModal'
+import { toast } from './Toast'
 import './AdminDashboard.css'
 
 export default function AdminDashboard({ onExitAdmin }) {
@@ -11,7 +13,7 @@ export default function AdminDashboard({ onExitAdmin }) {
   const [settings, setSettings] = useState(null)
   const [searchMember, setSearchMember] = useState('')
   const [loading, setLoading] = useState(true)
-  const [notice, setNotice] = useState(null)
+  const [promptConfig, setPromptConfig] = useState(null)
 
   useEffect(() => {
     loadAllData()
@@ -34,68 +36,109 @@ export default function AdminDashboard({ onExitAdmin }) {
       setSettings(settsData)
     } catch (err) {
       console.error('Failed to load admin data', err)
+      toast.error('Failed to sync latest admin data.', 'Network Error')
     } finally {
       setLoading(false)
     }
   }
 
-  const showNotification = (msg) => {
-    setNotice(msg)
-    setTimeout(() => setNotice(null), 4000)
-  }
-
-  // Handle Payout Approval
-  const handleApproveWithdrawal = async (id, amount, upiId) => {
+  // Handle Payout Approval with Custom Modal
+  const handleApproveWithdrawal = (id, amount, upiId, userName) => {
     const defaultUtr = `UTR-${Date.now().toString().slice(-8)}`
-    const utr = prompt(`Confirm banking transfer of ₹${amount} to ${upiId}.\nEnter UTR / Ref Number:`, defaultUtr)
-    if (!utr) return
-
-    try {
-      await apiService.processWithdrawal(id, true, utr, 'Dispatched via Banking UPI Gateway')
-      showNotification(`✓ Withdrawal of ₹${amount} marked as PAID with ${utr}!`)
-      loadAllData()
-    } catch (e) {
-      alert(e.message)
-    }
+    setPromptConfig({
+      title: '⚡ Approve Banking Transfer',
+      subtitle: `Clear payout for ${userName}`,
+      icon: '🏦',
+      type: 'default',
+      detailLabel: 'Transfer Amount & Destination:',
+      detailValue: `₹${Number(amount).toFixed(2)} → ${upiId}`,
+      inputLabel: 'Banking UTR / Transaction Reference Number',
+      initialValue: defaultUtr,
+      placeholder: 'e.g. UTR-98234821',
+      submitText: '✓ Approve & Mark Paid',
+      onSubmit: async (utr) => {
+        setPromptConfig(null)
+        try {
+          await apiService.processWithdrawal(id, true, utr, 'Dispatched via Banking UPI Gateway')
+          toast.success(`Withdrawal of ₹${amount} marked as PAID!\nUTR: ${utr}`, 'Payout Settled')
+          loadAllData()
+        } catch (e) {
+          toast.error(e.message, 'Approval Failed')
+        }
+      }
+    })
   }
 
-  // Handle Payout Rejection
-  const handleRejectWithdrawal = async (id, amount) => {
-    const reason = prompt(`Enter reason for rejecting ₹${amount} withdrawal:`, 'Invalid UPI account or KYC mismatch')
-    if (!reason) return
-
-    try {
-      await apiService.processWithdrawal(id, false, null, reason)
-      showNotification(`Withdrawal request rejected. Funds returned to member wallet.`)
-      loadAllData()
-    } catch (e) {
-      alert(e.message)
-    }
+  // Handle Payout Rejection with Custom Modal
+  const handleRejectWithdrawal = (id, amount, userName) => {
+    setPromptConfig({
+      title: '✕ Reject Payout Request',
+      subtitle: `Amount will be refunded back to ${userName}'s wallet`,
+      icon: '⚠️',
+      type: 'danger',
+      detailLabel: 'Refund Amount:',
+      detailValue: `₹${Number(amount).toFixed(2)}`,
+      inputLabel: 'Reason for Rejection',
+      initialValue: 'Invalid UPI ID or KYC verification required',
+      placeholder: 'Enter reason...',
+      submitText: '✕ Reject & Refund',
+      onSubmit: async (reason) => {
+        setPromptConfig(null)
+        try {
+          await apiService.processWithdrawal(id, false, null, reason)
+          toast.warning(`Withdrawal of ₹${amount} rejected.\nReason: ${reason}`, 'Payout Refunded')
+          loadAllData()
+        } catch (e) {
+          toast.error(e.message, 'Rejection Failed')
+        }
+      }
+    })
   }
 
   // Handle Member Status Toggle
   const handleToggleMember = async (userId, currentName) => {
     try {
       const res = await apiService.toggleMemberStatus(userId)
-      showNotification(`Ant member "${currentName}" is now ${res.isActive ? 'Active' : 'Suspended'}`)
+      if (res.isActive) {
+        toast.success(`Ant member "${currentName}" is now Active.`, 'Member Activated')
+      } else {
+        toast.warning(`Ant member "${currentName}" has been Suspended.`, 'Member Suspended')
+      }
       loadAllData()
     } catch (e) {
-      alert(e.message)
+      toast.error(e.message, 'Action Failed')
     }
   }
 
-  // Handle Merchant Cashback Update
-  const handleUpdateMerchantRate = async (id, name, currentRate) => {
-    const newRate = prompt(`Enter new cashback % for ${name}:`, currentRate)
-    if (newRate === null || isNaN(newRate)) return
-
-    try {
-      await apiService.updateMerchantRate(id, Number(newRate))
-      showNotification(`✓ Updated ${name} cashback rate to ${newRate}%!`)
-      loadAllData()
-    } catch (e) {
-      alert(e.message)
-    }
+  // Handle Merchant Cashback Update with Custom Modal
+  const handleUpdateMerchantRate = (id, name, currentRate) => {
+    setPromptConfig({
+      title: `🛍️ Update Cashback Rate`,
+      subtitle: `Configure instant rebate percentage for ${name}`,
+      icon: '🏷️',
+      type: 'info',
+      detailLabel: 'Current Store:',
+      detailValue: `${name} (Current: ${currentRate}%)`,
+      inputLabel: 'New Cashback Percentage (%)',
+      initialValue: String(currentRate),
+      placeholder: 'e.g. 9.5',
+      inputType: 'number',
+      submitText: 'Save New Rate',
+      onSubmit: async (newRate) => {
+        if (isNaN(newRate) || Number(newRate) < 0) {
+          toast.error('Please enter a valid percentage rate', 'Invalid Input')
+          return
+        }
+        setPromptConfig(null)
+        try {
+          await apiService.updateMerchantRate(id, Number(newRate))
+          toast.success(`Updated ${name} cashback rebate to ${newRate}%!`, 'Rates Updated')
+          loadAllData()
+        } catch (e) {
+          toast.error(e.message, 'Update Failed')
+        }
+      }
+    })
   }
 
   // Handle Colony Settings Save
@@ -103,10 +146,10 @@ export default function AdminDashboard({ onExitAdmin }) {
     e.preventDefault()
     try {
       await apiService.updateColonySettings(settings)
-      showNotification('✓ Colony Economics & Rules updated successfully!')
+      toast.success('Colony Economics & Compensation Engine rules applied!', 'Settings Saved')
       loadAllData()
     } catch (e) {
-      alert(e.message)
+      toast.error(e.message, 'Save Failed')
     }
   }
 
@@ -296,13 +339,13 @@ export default function AdminDashboard({ onExitAdmin }) {
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                               className="admin-btn admin-btn-approve"
-                              onClick={() => handleApproveWithdrawal(w.id, w.amount, w.upiId)}
+                              onClick={() => handleApproveWithdrawal(w.id, w.amount, w.upiId, w.userName)}
                             >
                               ✓ Approve & Pay
                             </button>
                             <button
                               className="admin-btn admin-btn-reject"
-                              onClick={() => handleRejectWithdrawal(w.id, w.amount)}
+                              onClick={() => handleRejectWithdrawal(w.id, w.amount, w.userName)}
                             >
                               ✕ Reject
                             </button>
@@ -580,6 +623,15 @@ export default function AdminDashboard({ onExitAdmin }) {
             </button>
           </form>
         </div>
+      )}
+
+      {/* Custom Prompt & Confirmation Modal */}
+      {promptConfig && (
+        <PromptModal
+          isOpen={!!promptConfig}
+          onClose={() => setPromptConfig(null)}
+          {...promptConfig}
+        />
       )}
     </section>
   )

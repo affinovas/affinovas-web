@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { toast } from './Toast'
 import './DailySpinWheel.css'
 
 export default function DailySpinWheel({ lang = 'ta', onGrainsWon }) {
@@ -46,6 +47,7 @@ export default function DailySpinWheel({ lang = 'ta', onGrainsWon }) {
       setWonPrize(prize)
       setSpinning(false)
       setHasSpunToday(true)
+      toast.success(`You harvested +${prize.value} Colony Grains from the daily wheel!`, '🌾 Wheel Harvest Won')
       if (onGrainsWon) {
         onGrainsWon(prize.value)
       }
