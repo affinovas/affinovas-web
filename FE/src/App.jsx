@@ -1,15 +1,36 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 export default function App() {
-  const [lang, setLang] = useState('ta') // 'en' or 'ta'
+  // Navigation: 'home' | 'colony' | 'cashback' | 'services' | 'vault'
+  const [activeTab, setActiveTab] = useState('home')
+  const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
+
+  // Ants & Grains state
   const [directInvites, setDirectInvites] = useState(5)
   const [levelDepth, setLevelDepth] = useState(3)
   const [selectedBranch, setSelectedBranch] = useState('somu')
   const [antName, setAntName] = useState('Ant_Ramu')
   const [copied, setCopied] = useState(false)
 
-  // 10-Level Table Data
+  // Cashback state
+  const [monthlySpend, setMonthlySpend] = useState(12000)
+  const [avgCashbackRate, setAvgCashbackRate] = useState(8)
+  const [convertedGrains, setConvertedGrains] = useState(0)
+
+  // Auto-switch tab if URL contains ?tab= or ?ref=
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tabParam = params.get('tab')
+    const refParam = params.get('ref')
+    if (tabParam && ['home', 'colony', 'cashback', 'services', 'vault'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    } else if (refParam) {
+      setActiveTab('colony')
+    }
+  }, [])
+
+  // 10-Level Table Data for Ants & Grains
   const levelTable = [
     { level: 1, ants: 5, bonus: 100 },
     { level: 2, ants: 25, bonus: 200 },
@@ -23,7 +44,7 @@ export default function App() {
     { level: 10, ants: 9765625, bonus: 1000 },
   ]
 
-  // Calculator Logic
+  // Colony calculations
   const directGrains = directInvites * 20
   const levelBonusPerBranch = levelTable
     .slice(0, levelDepth)
@@ -31,13 +52,12 @@ export default function App() {
   const totalLevelGrains = levelBonusPerBranch * directInvites
   const totalHarvestGrains = directGrains + totalLevelGrains
 
-  // Branch demo profiles
   const branches = {
     somu: {
       name: 'Somu',
       status: 'Level 3 Active',
       activeLevel: 3,
-      currentAnts: 155, // 5 + 25 + 125
+      currentAnts: 155,
       earned: 20 + 100 + 200 + 300,
     },
     mani: {
@@ -57,380 +77,892 @@ export default function App() {
   }
 
   const handleCopyLink = () => {
-    const link = `https://affinovas.online/colony?ref=${encodeURIComponent(antName || 'AntMember')}`
+    const link = `https://affinovas.online?tab=colony&ref=${encodeURIComponent(antName || 'AntMember')}`
     navigator.clipboard?.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 3000)
   }
 
+  // Cashback calculations
+  const monthlyCashbackINR = (monthlySpend * avgCashbackRate) / 100
+  const bonusGrainsFromCashback = Math.floor(monthlyCashbackINR * 1.5)
+
   return (
-    <div className="colony-container">
-      {/* Navbar */}
-      <header className="colony-nav">
-        <div className="brand-colony">
-          <div className="ant-avatar">🐜</div>
-          <span className="brand-title">
-            Ants & Grains
-            <span className="brand-tag">affinovas.online</span>
-          </span>
+    <div className="affinovas-app">
+      {/* Master Top Navigation Bar */}
+      <header className="master-nav">
+        <div className="brand-section" onClick={() => setActiveTab('home')}>
+          <div className="affinovas-logo-badge">A</div>
+          <div className="brand-meta">
+            <span className="brand-name-main">
+              Affinovas
+            </span>
+            <span className="brand-domain-chip">affinovas.online</span>
+          </div>
         </div>
 
-        <div className="nav-actions">
-          {/* Language Toggle */}
-          <div className="lang-toggle">
-            <button
-              className={`lang-btn ${lang === 'ta' ? 'active' : ''}`}
-              onClick={() => setLang('ta')}
-            >
-              தமிழ்
-            </button>
-            <button
-              className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
-              onClick={() => setLang('en')}
-            >
-              English
-            </button>
-          </div>
+        {/* Ecosystem Module Switcher */}
+        <nav className="module-switcher">
+          <button
+            className={`module-tab-btn ${activeTab === 'home' ? 'active' : ''}`}
+            onClick={() => setActiveTab('home')}
+          >
+            🏠 Hub
+          </button>
+          <button
+            className={`module-tab-btn ${activeTab === 'colony' ? 'active' : ''}`}
+            onClick={() => setActiveTab('colony')}
+          >
+            🐜 Ants & Grains
+          </button>
+          <button
+            className={`module-tab-btn ${activeTab === 'cashback' ? 'active' : ''}`}
+            onClick={() => setActiveTab('cashback')}
+          >
+            💸 Cashback & Deals
+          </button>
+          <button
+            className={`module-tab-btn ${activeTab === 'services' ? 'active' : ''}`}
+            onClick={() => setActiveTab('services')}
+          >
+            ⚡ Digital Solutions
+          </button>
+          <button
+            className={`module-tab-btn ${activeTab === 'vault' ? 'active' : ''}`}
+            onClick={() => setActiveTab('vault')}
+          >
+            💼 Vault
+          </button>
+        </nav>
 
-          <a href="#calculator" className="nav-cta">
-            {lang === 'ta' ? 'தானிய கால்குலேட்டர் 🌾' : 'Grain Calculator 🌾'}
-          </a>
+        {/* Quick User / Wallet Indicator */}
+        <div className="nav-right-actions">
+          <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')}>
+            <span>🌾 1,840 Grains</span>
+            <span style={{ opacity: 0.6 }}>|</span>
+            <span style={{ color: '#34d399' }}>₹450</span>
+          </div>
         </div>
       </header>
 
-      <main className="colony-main">
-        {/* Hero Section */}
-        <section className="colony-hero">
-          <div className="colony-pill">
-            <span>🐜 ANTS & GRAINS COLONY SYSTEM 🌾</span>
-          </div>
-
-          <h1 className="hero-heading">
-            {lang === 'ta' ? (
-              <>
-                ஒவ்வொரு எறும்பும் தானியம் சேர்க்கும். <br />
-                <span className="gold-text">காலனியை ஒன்றாய் உருவாக்குவோம்.</span>
-              </>
-            ) : (
-              <>
-                Every Ant Gathers Grains. <br />
-                <span className="gold-text">Together We Build The Colony.</span>
-              </>
-            )}
-          </h1>
-
-          <p className="hero-description">
-            {lang === 'ta'
-              ? 'Ants & Grains enbadhu oru referral-based colony system. Ovvoru member-um pudhu members-ai invite pannalaam. Direct referral bonus (20 grains) matrum ovvoru direct member-oda keezhayum thani 10-level branch growth!'
-              : 'A decentralized, community-driven ant colony ecosystem. Invite friends with 20 grains direct bonus, and unlock independent 10-level branch charts that multiply by 5× at every stage.'}
-          </p>
-        </section>
-
-        {/* Quick Metrics Cards */}
-        <section className="metrics-row">
-          <div className="metric-card">
-            <div className="metric-icon">🪙</div>
-            <div className="metric-value">123</div>
-            <div className="metric-label">{lang === 'ta' ? 'Joining / Entry Fee' : 'Colony Entry Fee'}</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-icon">🤝</div>
-            <div className="metric-value">+20</div>
-            <div className="metric-label">{lang === 'ta' ? 'Direct Referral Bonus' : 'Direct Referral Bonus'}</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-icon">📈</div>
-            <div className="metric-value">5×</div>
-            <div className="metric-label">{lang === 'ta' ? 'Level Growth Rate' : 'Level Expansion (5x)'}</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-icon">🪺</div>
-            <div className="metric-value">10</div>
-            <div className="metric-label">{lang === 'ta' ? 'Max Levels per Branch' : 'Max Levels per Branch'}</div>
-          </div>
-        </section>
-
-        {/* Interactive Calculator Section */}
-        <section id="calculator" className="calculator-box">
-          <div className="calc-header">
-            <h2>{lang === 'ta' ? '🌾 தானிய அறுவடை கால்குலேட்டர்' : '🌾 Interactive Grain Harvest Calculator'}</h2>
-            <p>
-              {lang === 'ta'
-                ? 'Ungal direct referrals matrum avargaloda level depth-ai adjust panni ungal grains-ai calculate pannunga!'
-                : 'Adjust your direct ant referrals and branch level depth to see your total potential grains in real time.'}
-            </p>
-          </div>
-
-          <div className="calc-grid">
-            <div className="calc-inputs">
-              <div className="slider-group">
-                <div className="slider-label">
-                  <span>{lang === 'ta' ? 'Direct Referral Ants (உங்க நேரடி எறும்புகள்)' : 'Direct Ant Referrals'}</span>
-                  <span className="slider-value-pill">{directInvites} Ants</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="20"
-                  value={directInvites}
-                  onChange={(e) => setDirectInvites(Number(e.target.value))}
-                  className="colony-slider"
-                />
+      {/* Main Container */}
+      <main className="main-wrapper">
+        {/* ======================================================== */}
+        {/* TAB 1: AFFINOVAS ECOSYSTEM HUB (DEFAULT LANDING)         */}
+        {/* ======================================================== */}
+        {activeTab === 'home' && (
+          <section className="portal-home">
+            <div className="portal-hero">
+              <div className="portal-pill">
+                <span>🌟 AFFINOVAS UNIFIED DIGITAL ECOSYSTEM</span>
               </div>
 
-              <div className="slider-group">
-                <div className="slider-label">
-                  <span>{lang === 'ta' ? 'Branch Level Growth Depth (வளர்ச்சி நிலை)' : 'Branch Growth Depth'}</span>
-                  <span className="slider-value-pill">Level {levelDepth}</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={levelDepth}
-                  onChange={(e) => setLevelDepth(Number(e.target.value))}
-                  className="colony-slider"
-                />
-              </div>
+              <h1 className="portal-heading">
+                One Platform. <br />
+                <span className="portal-gradient-text">Infinite Opportunities & Rewards.</span>
+              </h1>
 
-              <p style={{ fontSize: '0.88rem', color: '#9e9585', lineHeight: 1.5 }}>
-                {lang === 'ta'
-                  ? '💡 Note: Ovvoru direct referral-ukkum thaniya oru 10-level chart irukkum. Unlimited direct referrals panna mudiyum!'
-                  : '💡 Rule: Every direct referral gets their own isolated 10-level chart. Unlimited direct referrals are allowed!'}
+              <p className="portal-sub">
+                Affinovas bridges community referral networks, real-world shopping cashback,
+                and high-scale digital solutions under one unified architecture.
+                Choose a module below to get started.
               </p>
             </div>
 
-            <div className="calc-results">
-              <div className="calc-result-row">
-                <span>{lang === 'ta' ? 'Direct Referral Bonus (20 per ant)' : 'Direct Bonus (20 grains / ant)'}</span>
-                <span className="calc-result-val">{directGrains.toLocaleString()} Grains</span>
-              </div>
-              <div className="calc-result-row">
-                <span>{lang === 'ta' ? `Level Bonuses (Level 1 to ${levelDepth})` : `Level Bonuses (1 to ${levelDepth})`}</span>
-                <span className="calc-result-val">+{totalLevelGrains.toLocaleString()} Grains</span>
-              </div>
-              <div className="calc-result-row">
-                <span>{lang === 'ta' ? 'Active Branches Count' : 'Active Branches'}</span>
-                <span className="calc-result-val">{directInvites} Branches</span>
+            {/* 4 Interactive Pillars */}
+            <div className="pillars-grid">
+              {/* Pillar 1: Ants & Grains */}
+              <div
+                className="pillar-card"
+                style={{ '--card-accent': '#f59e0b' }}
+                onClick={() => setActiveTab('colony')}
+              >
+                <div>
+                  <div className="pillar-icon-box">🐜</div>
+                  <span className="pillar-badge">Colony Network</span>
+                  <h3 className="pillar-title">Ants & Grains Colony</h3>
+                  <p className="pillar-desc">
+                    Our flagship referral ecosystem. Invite fellow ants, gather grains, and build
+                    isolated 10-level branch trees multiplying at 5× speed.
+                  </p>
+                </div>
+                <div className="pillar-action-row">
+                  <span className="pillar-highlight">123 Grains • 10 Levels</span>
+                  <span className="pillar-btn">Enter Colony →</span>
+                </div>
               </div>
 
-              <div className="total-harvest-box">
-                <div className="total-title">{lang === 'ta' ? 'மொத்த தானியங்கள் (Total Harvest)' : 'Total Grains Harvest'}</div>
-                <div className="total-grains">{totalHarvestGrains.toLocaleString()} 🌾</div>
+              {/* Pillar 2: Cashback & Deals */}
+              <div
+                className="pillar-card"
+                style={{ '--card-accent': '#10b981' }}
+                onClick={() => setActiveTab('cashback')}
+              >
+                <div>
+                  <div className="pillar-icon-box">💸</div>
+                  <span className="pillar-badge" style={{ color: '#34d399', background: 'rgba(16, 185, 129, 0.15)' }}>
+                    Instant Savings
+                  </span>
+                  <h3 className="pillar-title">Cashback & Smart Deals</h3>
+                  <p className="pillar-desc">
+                    Earn up to 25% instant cashback on partner shopping, travel, and recharges. Convert
+                    cashback directly into colony grains or withdraw.
+                  </p>
+                </div>
+                <div className="pillar-action-row">
+                  <span className="pillar-highlight" style={{ color: '#34d399' }}>Up to 25% Rebate</span>
+                  <span className="pillar-btn">Explore Deals →</span>
+                </div>
+              </div>
+
+              {/* Pillar 3: Digital Solutions */}
+              <div
+                className="pillar-card"
+                style={{ '--card-accent': '#06b6d4' }}
+                onClick={() => setActiveTab('services')}
+              >
+                <div>
+                  <div className="pillar-icon-box">⚡</div>
+                  <span className="pillar-badge" style={{ color: '#38bdf8', background: 'rgba(6, 182, 212, 0.15)' }}>
+                    Enterprise Tech
+                  </span>
+                  <h3 className="pillar-title">Digital & Cloud Engineering</h3>
+                  <p className="pillar-desc">
+                    High-throughput backends built on .NET Clean Architecture, fast-refresh SPA clients,
+                    and intelligent automation platforms.
+                  </p>
+                </div>
+                <div className="pillar-action-row">
+                  <span className="pillar-highlight" style={{ color: '#38bdf8' }}>.NET & Cloud Ready</span>
+                  <span className="pillar-btn">View Services →</span>
+                </div>
+              </div>
+
+              {/* Pillar 4: Unified Vault */}
+              <div
+                className="pillar-card"
+                style={{ '--card-accent': '#8b5cf6' }}
+                onClick={() => setActiveTab('vault')}
+              >
+                <div>
+                  <div className="pillar-icon-box">💼</div>
+                  <span className="pillar-badge" style={{ color: '#c084fc', background: 'rgba(139, 92, 246, 0.15)' }}>
+                    Multi-Asset
+                  </span>
+                  <h3 className="pillar-title">Unified Member Vault</h3>
+                  <p className="pillar-desc">
+                    A single decentralized wallet tracking your grains harvest, cashback balances,
+                    direct bonuses, and instant payout withdrawals.
+                  </p>
+                </div>
+                <div className="pillar-action-row">
+                  <span className="pillar-highlight" style={{ color: '#c084fc' }}>Zero Fee Swap</span>
+                  <span className="pillar-btn">Open Vault →</span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* Visual Branch Explorer Demo */}
-        <section className="branch-explorer">
-          <div className="explorer-header">
-            <h2>{lang === 'ta' ? '🐜 தனியான பிராஞ்ச் இயக்கம் (Ramu - Somu & Mani Example)' : '🐜 Independent Branch Isolation Explorer'}</h2>
-            <p>
-              {lang === 'ta'
-                ? 'Ramu invite panna Somu matrum Mani-ku thanithani 10-level charts eppadi work aagudhu endru paarunga:'
-                : 'See how Ramu’s direct invites (Somu and Mani) run independent 10-level charts simultaneously:'}
-            </p>
-          </div>
-
-          <div className="branch-tabs">
-            <button
-              className={`branch-tab-btn ${selectedBranch === 'somu' ? 'active' : ''}`}
-              onClick={() => setSelectedBranch('somu')}
-            >
-              🌿 Somu’s Branch (Level 3)
-            </button>
-            <button
-              className={`branch-tab-btn ${selectedBranch === 'mani' ? 'active' : ''}`}
-              onClick={() => setSelectedBranch('mani')}
-            >
-              🌿 Mani’s Branch (Level 1)
-            </button>
-            <button
-              className={`branch-tab-btn ${selectedBranch === 'kavi' ? 'active' : ''}`}
-              onClick={() => setSelectedBranch('kavi')}
-            >
-              🌱 Kavi’s Branch (Fresh)
-            </button>
-          </div>
-
-          <div className="branch-card-preview">
-            <div className="branch-meta-row">
-              <div className="branch-name">
-                <span>🐜 {branches[selectedBranch].name}</span>
-                <span className="branch-status-badge">{branches[selectedBranch].status}</span>
+            {/* Ecosystem Stats Strip */}
+            <div className="ecosystem-stats-strip">
+              <div className="stat-item">
+                <h3>18,400+</h3>
+                <p>Active Ants in Colony</p>
               </div>
-              <div style={{ color: '#fbbf24', fontWeight: 700 }}>
-                {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains
+              <div className="stat-item">
+                <h3>₹2.4M+</h3>
+                <p>Cashback Distributed</p>
+              </div>
+              <div className="stat-item">
+                <h3>5.2M+</h3>
+                <p>Grains Harvested</p>
+              </div>
+              <div className="stat-item">
+                <h3>99.98%</h3>
+                <p>Platform Uptime</p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 2: ANTS & GRAINS COLONY DEEP-DIVE SYSTEM             */}
+        {/* ======================================================== */}
+        {activeTab === 'colony' && (
+          <section className="colony-section">
+            <div className="module-breadcrumb-bar">
+              <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
+                ← Back to Affinovas Hub
+              </button>
+              <div className="lang-toggle">
+                <button
+                  className={`lang-btn ${lang === 'ta' ? 'active' : ''}`}
+                  onClick={() => setLang('ta')}
+                >
+                  தமிழ்
+                </button>
+                <button
+                  className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+                  onClick={() => setLang('en')}
+                >
+                  English
+                </button>
               </div>
             </div>
 
-            <div className="branch-levels-view">
-              {levelTable.map((lvl) => {
-                const isUnlocked = lvl.level <= branches[selectedBranch].activeLevel
-                const isCurrent = lvl.level === branches[selectedBranch].activeLevel
-                return (
-                  <div
-                    key={lvl.level}
-                    className={`level-chip ${isUnlocked ? 'unlocked' : ''} ${isCurrent ? 'active-level' : ''}`}
-                  >
-                    <div className="level-num">Level {lvl.level}</div>
-                    <div className="level-ants">{lvl.ants.toLocaleString()} Ants</div>
-                    <div className="level-bonus">+{lvl.bonus} Grains</div>
+            <div className="colony-hero" style={{ paddingTop: '1rem' }}>
+              <div className="colony-pill">
+                <span>🐜 ANTS & GRAINS COLONY SYSTEM 🌾</span>
+              </div>
+              <h1 className="hero-heading">
+                {lang === 'ta' ? (
+                  <>
+                    ஒவ்வொரு எறும்பும் தானியம் சேர்க்கும். <br />
+                    <span className="gold-text">காலனியை ஒன்றாய் உருவாக்குவோம்.</span>
+                  </>
+                ) : (
+                  <>
+                    Every Ant Gathers Grains. <br />
+                    <span className="gold-text">Together We Build The Colony.</span>
+                  </>
+                )}
+              </h1>
+              <p className="hero-description">
+                {lang === 'ta'
+                  ? 'Ants & Grains enbadhu oru referral-based colony system. Ovvoru member-um pudhu members-ai invite pannalaam. Direct referral bonus (20 grains) matrum ovvoru direct member-oda keezhayum thani 10-level branch growth!'
+                  : 'A community-driven ant colony ecosystem. Invite friends with 20 grains direct bonus, and unlock independent 10-level branch charts that multiply by 5× at every stage.'}
+              </p>
+            </div>
+
+            {/* Quick Metrics */}
+            <div className="metrics-row">
+              <div className="metric-card">
+                <div className="metric-icon">🪙</div>
+                <div className="metric-value">123</div>
+                <div className="metric-label">{lang === 'ta' ? 'Joining / Entry Fee' : 'Colony Entry Fee'}</div>
+              </div>
+              <div className="metric-card">
+                <div className="metric-icon">🤝</div>
+                <div className="metric-value">+20</div>
+                <div className="metric-label">{lang === 'ta' ? 'Direct Referral Bonus' : 'Direct Referral Bonus'}</div>
+              </div>
+              <div className="metric-card">
+                <div className="metric-icon">📈</div>
+                <div className="metric-value">5×</div>
+                <div className="metric-label">{lang === 'ta' ? 'Level Growth Rate' : 'Level Expansion (5x)'}</div>
+              </div>
+              <div className="metric-card">
+                <div className="metric-icon">🪺</div>
+                <div className="metric-value">10</div>
+                <div className="metric-label">{lang === 'ta' ? 'Max Levels per Branch' : 'Max Levels per Branch'}</div>
+              </div>
+            </div>
+
+            {/* Interactive Calculator Section */}
+            <div id="calculator" className="calculator-box">
+              <div className="calc-header">
+                <h2>{lang === 'ta' ? '🌾 தானிய அறுவடை கால்குலேட்டர்' : '🌾 Interactive Grain Harvest Calculator'}</h2>
+                <p>
+                  {lang === 'ta'
+                    ? 'Ungal direct referrals matrum avargaloda level depth-ai adjust panni ungal grains-ai calculate pannunga!'
+                    : 'Adjust your direct ant referrals and branch level depth to see your total potential grains in real time.'}
+                </p>
+              </div>
+
+              <div className="calc-grid">
+                <div className="calc-inputs">
+                  <div className="slider-group">
+                    <div className="slider-label">
+                      <span>{lang === 'ta' ? 'Direct Referral Ants (உங்க நேரடி எறும்புகள்)' : 'Direct Ant Referrals'}</span>
+                      <span className="slider-value-pill">{directInvites} Ants</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      value={directInvites}
+                      onChange={(e) => setDirectInvites(Number(e.target.value))}
+                      className="colony-slider"
+                    />
                   </div>
-                )
-              })}
+
+                  <div className="slider-group">
+                    <div className="slider-label">
+                      <span>{lang === 'ta' ? 'Branch Level Growth Depth (வளர்ச்சி நிலை)' : 'Branch Growth Depth'}</span>
+                      <span className="slider-value-pill">Level {levelDepth}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={levelDepth}
+                      onChange={(e) => setLevelDepth(Number(e.target.value))}
+                      className="colony-slider"
+                    />
+                  </div>
+
+                  <p style={{ fontSize: '0.88rem', color: '#9e9585', lineHeight: 1.5 }}>
+                    {lang === 'ta'
+                      ? '💡 Note: Ovvoru direct referral-ukkum thaniya oru 10-level chart irukkum. Unlimited direct referrals panna mudiyum!'
+                      : '💡 Rule: Every direct referral gets their own isolated 10-level chart. Unlimited direct referrals are allowed!'}
+                  </p>
+                </div>
+
+                <div className="calc-results">
+                  <div className="calc-result-row">
+                    <span>{lang === 'ta' ? 'Direct Referral Bonus (20 per ant)' : 'Direct Bonus (20 grains / ant)'}</span>
+                    <span className="calc-result-val">{directGrains.toLocaleString()} Grains</span>
+                  </div>
+                  <div className="calc-result-row">
+                    <span>{lang === 'ta' ? `Level Bonuses (Level 1 to ${levelDepth})` : `Level Bonuses (1 to ${levelDepth})`}</span>
+                    <span className="calc-result-val">+{totalLevelGrains.toLocaleString()} Grains</span>
+                  </div>
+                  <div className="calc-result-row">
+                    <span>{lang === 'ta' ? 'Active Branches Count' : 'Active Branches'}</span>
+                    <span className="calc-result-val">{directInvites} Branches</span>
+                  </div>
+
+                  <div className="total-harvest-box">
+                    <div className="total-title">{lang === 'ta' ? 'மொத்த தானியங்கள் (Total Harvest)' : 'Total Grains Harvest'}</div>
+                    <div className="total-grains">{totalHarvestGrains.toLocaleString()} 🌾</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#9e9585', textAlign: 'center' }}>
-              {lang === 'ta'
-                ? '🔒 Somu-oda branch Level 10 complete aanaal andha branch close aagum. Aana Mani-oda branch thodarndhu active-aa irukkum!'
-                : '🔒 When Somu’s branch reaches Level 10, only Somu’s chart closes. Mani’s branch continues operating independently!'}
-            </p>
-          </div>
-        </section>
+            {/* Visual Branch Explorer Demo */}
+            <div className="branch-explorer">
+              <div className="explorer-header">
+                <h2>{lang === 'ta' ? '🐜 தனியான பிராஞ்ச் இயக்கம் (Ramu - Somu & Mani Example)' : '🐜 Independent Branch Isolation Explorer'}</h2>
+                <p>
+                  {lang === 'ta'
+                    ? 'Ramu invite panna Somu matrum Mani-ku thanithani 10-level charts eppadi work aagudhu endru paarunga:'
+                    : 'See how Ramu’s direct invites (Somu and Mani) run independent 10-level charts simultaneously:'}
+                </p>
+              </div>
 
-        {/* 10-Level Growth Table */}
-        <section className="growth-table-section">
-          <div className="section-title-wrap">
-            <div className="section-tag">Colony Matrix</div>
-            <h2 className="section-title">{lang === 'ta' ? '10-நிலை வளர்ச்சி அட்டவணை' : '10-Level Reward & Growth Chart'}</h2>
-          </div>
+              <div className="branch-tabs">
+                <button
+                  className={`branch-tab-btn ${selectedBranch === 'somu' ? 'active' : ''}`}
+                  onClick={() => setSelectedBranch('somu')}
+                >
+                  🌿 Somu’s Branch (Level 3)
+                </button>
+                <button
+                  className={`branch-tab-btn ${selectedBranch === 'mani' ? 'active' : ''}`}
+                  onClick={() => setSelectedBranch('mani')}
+                >
+                  🌿 Mani’s Branch (Level 1)
+                </button>
+                <button
+                  className={`branch-tab-btn ${selectedBranch === 'kavi' ? 'active' : ''}`}
+                  onClick={() => setSelectedBranch('kavi')}
+                >
+                  🌱 Kavi’s Branch (Fresh)
+                </button>
+              </div>
 
-          <div className="table-card">
-            <table className="styled-table">
-              <thead>
-                <tr>
-                  <th>Level</th>
-                  <th>{lang === 'ta' ? 'எறும்புகள் எண்ணிக்கை (Ants Count)' : 'Ants Required'}</th>
-                  <th>{lang === 'ta' ? 'வளர்ச்சி (Expansion)' : 'Multiplier'}</th>
-                  <th>{lang === 'ta' ? 'நிலை போனஸ் (Bonus per Level)' : 'Level Bonus'}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {levelTable.map((row) => (
-                  <tr key={row.level}>
-                    <td style={{ fontWeight: 800, color: '#fff' }}>Level {row.level}</td>
-                    <td style={{ color: '#fbbf24', fontWeight: 700 }}>{row.ants.toLocaleString()} Ants</td>
-                    <td>
-                      <span className="growth-badge">{row.level === 1 ? '5 Direct Base' : '5× Madangu'}</span>
-                    </td>
-                    <td style={{ color: '#34d399', fontWeight: 700 }}>+{row.bonus} Grains</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+              <div className="branch-card-preview">
+                <div className="branch-meta-row">
+                  <div className="branch-name">
+                    <span>🐜 {branches[selectedBranch].name}</span>
+                    <span className="branch-status-badge">{branches[selectedBranch].status}</span>
+                  </div>
+                  <div style={{ color: '#fbbf24', fontWeight: 700 }}>
+                    {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains
+                  </div>
+                </div>
 
-        {/* Rules & Transparency Breakdown */}
-        <section className="rules-section">
-          <div className="section-title-wrap">
-            <div className="section-tag">Guidelines</div>
-            <h2 className="section-title">{lang === 'ta' ? 'முக்கியமான காலனி விதிகள்' : 'Colony Rules & Mechanics'}</h2>
-          </div>
+                <div className="branch-levels-view">
+                  {levelTable.map((lvl) => {
+                    const isUnlocked = lvl.level <= branches[selectedBranch].activeLevel
+                    const isCurrent = lvl.level === branches[selectedBranch].activeLevel
+                    return (
+                      <div
+                        key={lvl.level}
+                        className={`level-chip ${isUnlocked ? 'unlocked' : ''} ${isCurrent ? 'active-level' : ''}`}
+                      >
+                        <div className="level-num">Level {lvl.level}</div>
+                        <div className="level-ants">{lvl.ants.toLocaleString()} Ants</div>
+                        <div className="level-bonus">+{lvl.bonus} Grains</div>
+                      </div>
+                    )
+                  })}
+                </div>
 
-          <div className="rules-grid">
-            <div className="rule-box">
-              <div className="rule-num">1</div>
-              <h3 className="rule-title">{lang === 'ta' ? '🪙 Joining / Entry Fee' : '🪙 Colony Entry Fee'}</h3>
-              <p className="rule-desc">
+                <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: '#9e9585', textAlign: 'center' }}>
+                  {lang === 'ta'
+                    ? '🔒 Somu-oda branch Level 10 complete aanaal andha branch close aagum. Aana Mani-oda branch thodarndhu active-aa irukkum!'
+                    : '🔒 When Somu’s branch reaches Level 10, only Somu’s chart closes. Mani’s branch continues operating independently!'}
+                </p>
+              </div>
+            </div>
+
+            {/* 10-Level Table */}
+            <div className="growth-table-section">
+              <div className="section-title-wrap">
+                <div className="section-tag">Colony Matrix</div>
+                <h2 className="section-title">{lang === 'ta' ? '10-நிலை வளர்ச்சி அட்டவணை' : '10-Level Reward & Growth Chart'}</h2>
+              </div>
+
+              <div className="table-card">
+                <table className="styled-table">
+                  <thead>
+                    <tr>
+                      <th>Level</th>
+                      <th>{lang === 'ta' ? 'எறும்புகள் எண்ணிக்கை (Ants Count)' : 'Ants Required'}</th>
+                      <th>{lang === 'ta' ? 'வளர்ச்சி (Expansion)' : 'Multiplier'}</th>
+                      <th>{lang === 'ta' ? 'நிலை போனஸ் (Bonus per Level)' : 'Level Bonus'}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {levelTable.map((row) => (
+                      <tr key={row.level}>
+                        <td style={{ fontWeight: 800, color: '#fff' }}>Level {row.level}</td>
+                        <td style={{ color: '#fbbf24', fontWeight: 700 }}>{row.ants.toLocaleString()} Ants</td>
+                        <td>
+                          <span className="growth-badge">{row.level === 1 ? '5 Direct Base' : '5× Madangu'}</span>
+                        </td>
+                        <td style={{ color: '#34d399', fontWeight: 700 }}>+{row.bonus} Grains</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Rules Cards */}
+            <div className="rules-section">
+              <div className="section-title-wrap">
+                <div className="section-tag">Guidelines</div>
+                <h2 className="section-title">{lang === 'ta' ? 'முக்கியமான காலனி விதிகள்' : 'Colony Rules & Mechanics'}</h2>
+              </div>
+
+              <div className="rules-grid">
+                <div className="rule-box">
+                  <div className="rule-num">1</div>
+                  <h3 className="rule-title">{lang === 'ta' ? '🪙 Joining / Entry Fee' : '🪙 Colony Entry Fee'}</h3>
+                  <p className="rule-desc">
+                    {lang === 'ta'
+                      ? 'Ovvoru pudhu ant-um colony-la join panna 123 grains entry fee pay pannanum. Idhan moolam avargaloda sontha referral network-ai start pannalaam.'
+                      : 'Every ant contributes 123 grains as an entry fee to enter the colony and unlock their own referral network.'}
+                  </p>
+                </div>
+
+                <div className="rule-box">
+                  <div className="rule-num">2</div>
+                  <h3 className="rule-title">{lang === 'ta' ? '🤝 Direct Referral Bonus' : '🤝 Direct Referral Bonus'}</h3>
+                  <p className="rule-desc">
+                    {lang === 'ta'
+                      ? 'Oru ant pudhu member-ai direct-aa invite pannina, 20 grains direct bonus kidaikkum. Unlimited direct referrals panna mudiyum! (Eg: 5 friends = 100 grains).'
+                      : 'Receive 20 grains immediately for every ant you directly invite. There is zero limit on direct referrals.'}
+                  </p>
+                </div>
+
+                <div className="rule-box">
+                  <div className="rule-num">3</div>
+                  <h3 className="rule-title">{lang === 'ta' ? '🪺 Separate 10-Level Charts' : '🪺 Isolated 10-Level Trees'}</h3>
+                  <p className="rule-desc">
+                    {lang === 'ta'
+                      ? 'Ovvoru direct referral-ukkum thanithaniyaana 10-level chart uruvaagum! Ramu Somu-vai invite pannina, Somu-ku thaniya oru chart, Mani-ku thaniya oru chart.'
+                      : 'Each direct invite starts their own independent 10-level tree. Branches progress and pay out separately without interfering with each other.'}
+                  </p>
+                </div>
+
+                <div className="rule-box">
+                  <div className="rule-num">4</div>
+                  <h3 className="rule-title">{lang === 'ta' ? '🌾 Ramu – Somu – 5 Friends Example' : '🌾 Financial Flow Example'}</h3>
+                  <p className="rule-desc">
+                    {lang === 'ta'
+                      ? 'Somu 5 friends-ai invite pannina: Somu-ku 5 × 20 = 100 grains direct bonus. Ramu-ku Level 1 bonus = 100 grains. 5 friends entry = 615 grains. Total payout = 200 grains. Colony balance = 415 grains.'
+                      : 'When 5 friends join under Somu, 615 grains are collected. Somu gets 100 grains direct, Ramu gets 100 grains Level 1, leaving 415 grains safely in reserve.'}
+                  </p>
+                </div>
+
+                <div className="rule-box">
+                  <div className="rule-num">5</div>
+                  <h3 className="rule-title">{lang === 'ta' ? '🔒 Level 10 Completion Cap' : '🔒 Level 10 Cap & Closure'}</h3>
+                  <p className="rule-desc">
+                    {lang === 'ta'
+                      ? 'Oru branch Level 10 complete panna piragu, andha branch close aagum. Matra active branches thodarndhu bonus kodukkum. Pudhu direct referrals pudhu chart-ai thodangum.'
+                      : 'A branch gracefully retires after completing Level 10. All your other branches remain fully active, and new invites open new charts.'}
+                  </p>
+                </div>
+
+                <div className="rule-box">
+                  <div className="rule-num">6</div>
+                  <h3 className="rule-title">{lang === 'ta' ? '📌 Quick Summary' : '📌 Core Formula'}</h3>
+                  <p className="rule-desc">
+                    {lang === 'ta'
+                      ? '123 Grains entry • 20 Grains direct bonus • 5x level growth • 100-1000 grains level bonus • 10 levels maximum per branch.'
+                      : '123 Grains entry • 20 Grains direct bonus • 5x multiplier • 100-1,000 grains bonus • 10-level ceiling per branch.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Share link generator */}
+            <div className="link-generator-card">
+              <h2>{lang === 'ta' ? '🌾 உங்கள் நேரடி Referral Link-ஐ உருவாக்குங்கள்' : '🌾 Generate Your Ant Referral Link'}</h2>
+              <p>
                 {lang === 'ta'
-                  ? 'Ovvoru pudhu ant-um colony-la join panna 123 grains entry fee pay pannanum. Idhan moolam avargaloda sontha referral network-ai start pannalaam.'
-                  : 'Every ant contributes 123 grains as an entry fee to enter the colony and unlock their own referral network.'}
+                  ? 'Ungal Ant ID / Name-ai enter panni link-ai copy pannunga. Friends-idam share panni 20 grains per direct invite earn pannunga!'
+                  : 'Enter your Ant handle to generate a custom invite URL. Share with fellow ants to harvest 20 grains per direct referral!'}
+              </p>
+
+              <div className="link-input-row">
+                <input
+                  type="text"
+                  className="ant-id-input"
+                  value={antName}
+                  onChange={(e) => setAntName(e.target.value)}
+                  placeholder="Enter Ant Handle (e.g. Ant_Ramu)"
+                />
+                <button className="copy-btn" onClick={handleCopyLink}>
+                  {copied ? 'Copied! 🌾' : 'Copy Invite Link'}
+                </button>
+              </div>
+
+              {copied && (
+                <div className="copy-toast">
+                  ✓ Link copied: https://affinovas.online?tab=colony&ref={encodeURIComponent(antName || 'AntMember')}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 3: CASHBACK & SMART DEALS                            */}
+        {/* ======================================================== */}
+        {activeTab === 'cashback' && (
+          <section className="cashback-section">
+            <div className="module-breadcrumb-bar">
+              <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
+                ← Back to Affinovas Hub
+              </button>
+              <span style={{ fontSize: '0.85rem', color: '#34d399', fontWeight: 700 }}>
+                ✓ Live Partner Stores Active
+              </span>
+            </div>
+
+            <div className="cashback-hero">
+              <div className="portal-pill" style={{ borderColor: 'rgba(16, 185, 129, 0.4)', color: '#34d399' }}>
+                <span>💸 AFFINOVAS CASHBACK & REWARDS HUB</span>
+              </div>
+              <h1 className="hero-heading">
+                Shop Anywhere. <br />
+                <span className="gold-text" style={{ background: 'linear-gradient(135deg, #a7f3d0, #34d399, #059669)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Earn Real Cash & Multiply Grains.
+                </span>
+              </h1>
+              <p className="hero-description">
+                Earn instant cashback on your everyday purchases, electronics, bill payments, and flights.
+                Withdraw as real cash or convert directly into Colony Grains at a 1.5× bonus multiplier!
               </p>
             </div>
 
-            <div className="rule-box">
-              <div className="rule-num">2</div>
-              <h3 className="rule-title">{lang === 'ta' ? '🤝 Direct Referral Bonus' : '🤝 Direct Referral Bonus'}</h3>
-              <p className="rule-desc">
-                {lang === 'ta'
-                  ? 'Oru ant pudhu member-ai direct-aa invite pannina, 20 grains direct bonus kidaikkum. Unlimited direct referrals panna mudiyum! (Eg: 5 friends = 100 grains).'
-                  : 'Receive 20 grains immediately for every ant you directly invite. There is zero limit on direct referrals.'}
+            {/* Interactive Cashback Simulator */}
+            <div className="cashback-calc-card">
+              <div>
+                <h3 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '0.5rem' }}>
+                  Cashback & Grain Simulator
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginBottom: '1.5rem' }}>
+                  Estimate how much you can earn every month through Affinovas partner merchants:
+                </p>
+
+                <div className="slider-group">
+                  <div className="slider-label">
+                    <span>Monthly Shopping & Recharges</span>
+                    <span className="slider-value-pill" style={{ color: '#34d399', borderColor: '#10b981' }}>
+                      ₹{monthlySpend.toLocaleString()}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1000"
+                    max="50000"
+                    step="1000"
+                    value={monthlySpend}
+                    onChange={(e) => setMonthlySpend(Number(e.target.value))}
+                    className="colony-slider"
+                  />
+                </div>
+
+                <div className="slider-group">
+                  <div className="slider-label">
+                    <span>Average Partner Cashback Rate</span>
+                    <span className="slider-value-pill" style={{ color: '#34d399', borderColor: '#10b981' }}>
+                      {avgCashbackRate}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="3"
+                    max="25"
+                    value={avgCashbackRate}
+                    onChange={(e) => setAvgCashbackRate(Number(e.target.value))}
+                    className="colony-slider"
+                  />
+                </div>
+              </div>
+
+              <div className="calc-results" style={{ borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+                <div className="calc-result-row">
+                  <span>Monthly Estimated Cashback</span>
+                  <span className="calc-result-val" style={{ color: '#34d399', fontSize: '1.2rem' }}>
+                    ₹{monthlyCashbackINR.toLocaleString()}
+                  </span>
+                </div>
+                <div className="calc-result-row">
+                  <span>Annual Accumulated Savings</span>
+                  <span className="calc-result-val" style={{ color: '#fff' }}>
+                    ₹{(monthlyCashbackINR * 12).toLocaleString()}
+                  </span>
+                </div>
+                <div className="calc-result-row">
+                  <span>Convertible Colony Grains (1.5x)</span>
+                  <span className="calc-result-val" style={{ color: 'var(--grain-honey)' }}>
+                    +{bonusGrainsFromCashback.toLocaleString()} Grains 🌾
+                  </span>
+                </div>
+
+                <div className="total-harvest-box" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.1))', borderColor: '#10b981' }}>
+                  <div className="total-title" style={{ color: '#a7f3d0' }}>Cashback Earnings Wallet</div>
+                  <div className="total-grains" style={{ color: '#34d399' }}>
+                    ₹{monthlyCashbackINR.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Popular Partners Grid */}
+            <div>
+              <div className="section-title-wrap">
+                <div className="section-tag">Featured Merchant Deals</div>
+                <h2 className="section-title">Popular Cashback Categories</h2>
+              </div>
+
+              <div className="merchants-grid">
+                <div className="merchant-card">
+                  <div className="merchant-info">
+                    <div className="merchant-logo">📱</div>
+                    <div>
+                      <div className="merchant-name">Electronics & Gadgets</div>
+                      <div className="merchant-cat">Laptops, Phones & Accessories</div>
+                    </div>
+                  </div>
+                  <div className="merchant-cashback-rate">Up to 8%</div>
+                </div>
+
+                <div className="merchant-card">
+                  <div className="merchant-info">
+                    <div className="merchant-logo">✈️</div>
+                    <div>
+                      <div className="merchant-name">Travel & Flight Bookings</div>
+                      <div className="merchant-cat">Hotels, Airlines & Holidays</div>
+                    </div>
+                  </div>
+                  <div className="merchant-cashback-rate">Up to 12%</div>
+                </div>
+
+                <div className="merchant-card">
+                  <div className="merchant-info">
+                    <div className="merchant-logo">🛍️</div>
+                    <div>
+                      <div className="merchant-name">Fashion & Apparel</div>
+                      <div className="merchant-cat">Top Brands & Footwear</div>
+                    </div>
+                  </div>
+                  <div className="merchant-cashback-rate">Up to 15%</div>
+                </div>
+
+                <div className="merchant-card">
+                  <div className="merchant-info">
+                    <div className="merchant-logo">⚡</div>
+                    <div>
+                      <div className="merchant-name">Utility Bills & Recharges</div>
+                      <div className="merchant-cat">Electricity, Mobile & Broadband</div>
+                    </div>
+                  </div>
+                  <div className="merchant-cashback-rate">Flat 5%</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 4: DIGITAL & CLOUD SOLUTIONS                         */}
+        {/* ======================================================== */}
+        {activeTab === 'services' && (
+          <section className="services-section">
+            <div className="module-breadcrumb-bar">
+              <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
+                ← Back to Affinovas Hub
+              </button>
+              <span style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 700 }}>
+                Enterprise Grade Solutions
+              </span>
+            </div>
+
+            <div className="portal-hero">
+              <div className="portal-pill" style={{ borderColor: 'rgba(6, 182, 212, 0.4)', color: '#38bdf8' }}>
+                <span>⚡ AFFINOVAS DIGITAL ENGINEERING</span>
+              </div>
+              <h1 className="hero-heading">
+                Scalable Cloud Architectures. <br />
+                <span className="gold-text" style={{ background: 'linear-gradient(135deg, #bae6fd, #38bdf8, #0284c7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Built for High Performance.
+                </span>
+              </h1>
+              <p className="hero-description">
+                The technical engine powering the entire Affinovas ecosystem. Clean architecture backends,
+                ultra-fast distributed frontend applications, and custom digital transformation.
               </p>
             </div>
 
-            <div className="rule-box">
-              <div className="rule-num">3</div>
-              <h3 className="rule-title">{lang === 'ta' ? '🪺 Separate 10-Level Charts' : '🪺 Isolated 10-Level Trees'}</h3>
-              <p className="rule-desc">
-                {lang === 'ta'
-                  ? 'Ovvoru direct referral-ukkum thanithaniyaana 10-level chart uruvaagum! Ramu Somu-vai invite pannina, Somu-ku thaniya oru chart, Mani-ku thaniya oru chart.'
-                  : 'Each direct invite starts their own independent 10-level tree. Branches progress and pay out separately without interfering with each other.'}
+            <div className="services-grid">
+              <div className="service-card">
+                <div className="service-icon">🏗️</div>
+                <h3 className="service-title">.NET Clean Architecture Backend</h3>
+                <p className="service-desc">
+                  Separated Domain, Application, Infrastructure, and API layers with high-performance
+                  SQL connections, JWT token authorization, and microservice capabilities.
+                </p>
+              </div>
+
+              <div className="service-card">
+                <div className="service-icon">🌐</div>
+                <h3 className="service-title">Edge Web Applications</h3>
+                <p className="service-desc">
+                  Decoupled React and modern Single Page Applications (SPA) distributed across global
+                  edge networks with sub-millisecond static asset delivery and instant reload.
+                </p>
+              </div>
+
+              <div className="service-card">
+                <div className="service-icon">🔒</div>
+                <h3 className="service-title">Cryptographic Security & Ledgers</h3>
+                <p className="service-desc">
+                  Tamper-resistant audit trails, granular user role permissions, zero-trust API policies,
+                  and automated multi-tier transaction ledgers.
+                </p>
+              </div>
+
+              <div className="service-card">
+                <div className="service-icon">📊</div>
+                <h3 className="service-title">Data Analytics & Pipeline Engine</h3>
+                <p className="service-desc">
+                  Real-time branch calculation algorithms, automatic level progression evaluation,
+                  and scalable analytics dashboards for enterprise operators.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 5: UNIFIED MEMBER VAULT                              */}
+        {/* ======================================================== */}
+        {activeTab === 'vault' && (
+          <section className="vault-section">
+            <div className="module-breadcrumb-bar">
+              <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
+                ← Back to Affinovas Hub
+              </button>
+              <span style={{ fontSize: '0.85rem', color: '#c084fc', fontWeight: 700 }}>
+                Unified Multi-Asset Wallet
+              </span>
+            </div>
+
+            <div className="portal-hero">
+              <div className="portal-pill" style={{ borderColor: 'rgba(139, 92, 246, 0.4)', color: '#c084fc' }}>
+                <span>💼 AFFINOVAS UNIFIED VAULT</span>
+              </div>
+              <h1 className="hero-heading">
+                One Wallet. <br />
+                <span className="gold-text" style={{ background: 'linear-gradient(135deg, #e9d5ff, #c084fc, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  Total Asset Transparency.
+                </span>
+              </h1>
+              <p className="hero-description">
+                Monitor your Colony Grain harvest, cashback rewards, referral bonuses, and instant payout
+                transfers from one secure dashboard.
               </p>
             </div>
 
-            <div className="rule-box">
-              <div className="rule-num">4</div>
-              <h3 className="rule-title">{lang === 'ta' ? '🌾 Ramu – Somu – 5 Friends Example' : '🌾 Financial Flow Example'}</h3>
-              <p className="rule-desc">
-                {lang === 'ta'
-                  ? 'Somu 5 friends-ai invite pannina: Somu-ku 5 × 20 = 100 grains direct bonus. Ramu-ku Level 1 bonus = 100 grains. 5 friends entry = 615 grains. Total payout = 200 grains. Colony balance = 415 grains.'
-                  : 'When 5 friends join under Somu, 615 grains are collected. Somu gets 100 grains direct, Ramu gets 100 grains Level 1, leaving 415 grains safely in reserve.'}
-              </p>
+            <div className="vault-box">
+              <div className="vault-balances-row">
+                <div className="vault-bal-card">
+                  <div className="vault-bal-title">Colony Grains Balance</div>
+                  <div className="vault-bal-amount" style={{ color: 'var(--grain-honey)' }}>
+                    1,840 🌾
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    ≈ ₹1,840 value in colony
+                  </p>
+                </div>
+
+                <div className="vault-bal-card">
+                  <div className="vault-bal-title">Cashback Wallet</div>
+                  <div className="vault-bal-amount" style={{ color: '#34d399' }}>
+                    ₹450.00
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    Available for withdrawal or swap
+                  </p>
+                </div>
+
+                <div className="vault-bal-card">
+                  <div className="vault-bal-title">Active Referral Branches</div>
+                  <div className="vault-bal-amount" style={{ color: '#38bdf8' }}>
+                    3 Branches
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                    160 total ants in network
+                  </p>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button
+                  className="nav-cta"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}
+                  onClick={() => alert('Withdrawal request initiated to linked bank/UPI!')}
+                >
+                  Withdraw Cashback (₹450)
+                </button>
+                <button
+                  className="nav-cta"
+                  onClick={() => {
+                    alert('Swapped ₹100 Cashback for 150 Colony Grains (1.5x Multiplier)!')
+                  }}
+                >
+                  Swap Cashback → Grains (1.5× Bonus)
+                </button>
+                <button
+                  className="module-tab-btn"
+                  style={{ border: '1px solid var(--border-earth)', color: '#fff' }}
+                  onClick={() => setActiveTab('colony')}
+                >
+                  Go to Ants & Grains Colony →
+                </button>
+              </div>
             </div>
-
-            <div className="rule-box">
-              <div className="rule-num">5</div>
-              <h3 className="rule-title">{lang === 'ta' ? '🔒 Level 10 Completion Cap' : '🔒 Level 10 Cap & Closure'}</h3>
-              <p className="rule-desc">
-                {lang === 'ta'
-                  ? 'Oru branch Level 10 complete panna piragu, andha branch close aagum. Matra active branches thodarndhu bonus kodukkum. Pudhu direct referrals pudhu chart-ai thodangum.'
-                  : 'A branch gracefully retires after completing Level 10. All your other branches remain fully active, and new invites open new charts.'}
-              </p>
-            </div>
-
-            <div className="rule-box">
-              <div className="rule-num">6</div>
-              <h3 className="rule-title">{lang === 'ta' ? '📌 Quick Summary' : '📌 Core Formula'}</h3>
-              <p className="rule-desc">
-                {lang === 'ta'
-                  ? '123 Grains entry • 20 Grains direct bonus • 5x level growth • 100-1000 grains level bonus • 10 levels maximum per branch.'
-                  : '123 Grains entry • 20 Grains direct bonus • 5x multiplier • 100-1,000 grains bonus • 10-level ceiling per branch.'}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Referral Link Generator */}
-        <section className="link-generator-card">
-          <h2>{lang === 'ta' ? '🌾 உங்கள் நேரடி Referral Link-ஐ உருவாக்குங்கள்' : '🌾 Generate Your Ant Referral Link'}</h2>
-          <p>
-            {lang === 'ta'
-              ? 'Ungal Ant ID / Name-ai enter panni link-ai copy pannunga. Friends-idam share panni 20 grains per direct invite earn pannunga!'
-              : 'Enter your Ant handle to generate a custom invite URL. Share with fellow ants to harvest 20 grains per direct referral!'}
-          </p>
-
-          <div className="link-input-row">
-            <input
-              type="text"
-              className="ant-id-input"
-              value={antName}
-              onChange={(e) => setAntName(e.target.value)}
-              placeholder="Enter Ant Handle (e.g. Ant_Ramu)"
-            />
-            <button className="copy-btn" onClick={handleCopyLink}>
-              {copied ? 'Copied! 🌾' : 'Copy Invite Link'}
-            </button>
-          </div>
-
-          {copied && (
-            <div className="copy-toast">
-              ✓ Link copied to clipboard: https://affinovas.online/colony?ref={encodeURIComponent(antName || 'AntMember')}
-            </div>
-          )}
-        </section>
+          </section>
+        )}
       </main>
 
-      {/* Footer */}
+      {/* Unified Footer */}
       <footer className="colony-footer">
         <p>
-          🐜 Ants & Grains Colony System • Powered by{' '}
+          © {new Date().getFullYear()} Affinovas Platform •{' '}
           <a href="https://affinovas.online" target="_blank" rel="noreferrer">
             affinovas.online
           </a>{' '}
-          • Build your mound, harvest grains.
+          • Unified Ecosystem: Colony Referrals, Cashback & Digital Cloud.
         </p>
       </footer>
     </div>

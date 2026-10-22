@@ -1,125 +1,156 @@
-/* Ants & Grains Theme Styles */
-.colony-container {
+/* Affinovas Multi-Service Super-Ecosystem Styles */
+:root {
+  --color-primary: #f59e0b;
+  --color-primary-hover: #d97706;
+  --color-emerald: #10b981;
+  --color-cyan: #06b6d4;
+  --color-purple: #8b5cf6;
+  --color-rose: #f43f5e;
+}
+
+.affinovas-app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Navbar */
-.colony-nav {
+/* Master Top Navigation Bar */
+.master-nav {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.1rem 2.5rem;
-  background: rgba(18, 14, 10, 0.88);
-  backdrop-filter: blur(16px);
+  padding: 0.9rem 2rem;
+  background: rgba(18, 14, 10, 0.92);
+  backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border-earth);
+  gap: 1.5rem;
 }
 
-.brand-colony {
+.brand-section {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-weight: 800;
-  font-size: 1.35rem;
-  letter-spacing: -0.02em;
+  cursor: pointer;
+  user-select: none;
 }
 
-.ant-avatar {
-  width: 40px;
-  height: 40px;
+.affinovas-logo-badge {
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #78350f, #292015);
-  border: 1px solid var(--border-earth-glow);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #120e0a;
+  font-weight: 900;
+  font-size: 1.45rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.35rem;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
 }
 
-.brand-title {
-  color: #fff;
+.brand-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name-main {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
-.brand-tag {
-  font-size: 0.75rem;
+.brand-domain-chip {
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--grain-gold);
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid var(--border-earth);
-  padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
 }
 
-.nav-actions {
+/* Module Switcher Tabs in Header */
+.module-switcher {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.4rem;
+  background: rgba(30, 24, 17, 0.85);
+  border: 1px solid var(--border-earth);
+  padding: 0.3rem;
+  border-radius: 14px;
 }
 
-.lang-toggle {
+.module-tab-btn {
   display: flex;
   align-items: center;
-  background: rgba(45, 37, 27, 0.8);
-  border: 1px solid var(--border-earth);
-  border-radius: 30px;
-  padding: 0.2rem;
-}
-
-.lang-btn {
-  padding: 0.35rem 0.85rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  gap: 0.45rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
   background: transparent;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 
-.lang-btn.active {
-  background: var(--grain-gold);
-  color: #120e0a;
+.module-tab-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.nav-cta {
-  padding: 0.55rem 1.25rem;
+.module-tab-btn.active {
   background: linear-gradient(135deg, var(--grain-gold), var(--grain-amber));
   color: #120e0a;
-  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+}
+
+.nav-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.wallet-quick-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--border-earth-glow);
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: 700;
-  font-size: 0.9rem;
+  color: var(--grain-honey);
+  cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
 }
 
-.nav-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.5);
+.wallet-quick-badge:hover {
+  background: rgba(245, 158, 11, 0.22);
 }
 
-/* Main Content Layout */
-.colony-main {
+/* Main Container */
+.main-wrapper {
   flex: 1;
-  max-width: 1140px;
+  max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 3rem 1.5rem 5rem;
+  padding: 2.5rem 1.5rem 5rem;
 }
 
-/* Hero Section */
-.colony-hero {
+/* ======================================================== */
+/* 1. ECOSYSTEM PORTAL OVERVIEW (HOME TAB)                  */
+/* ======================================================== */
+.portal-hero {
   text-align: center;
   padding: 2.5rem 0 3.5rem;
 }
 
-.colony-pill {
+.portal-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -128,421 +159,266 @@
   border: 1px solid var(--border-earth-glow);
   border-radius: 9999px;
   color: var(--grain-honey);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin-bottom: 1.5rem;
 }
 
-.hero-heading {
-  font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+.portal-heading {
+  font-size: clamp(2.4rem, 5.5vw, 4rem);
   font-weight: 900;
-  line-height: 1.15;
-  color: #ffffff;
+  line-height: 1.12;
+  color: #fff;
   margin-bottom: 1.25rem;
 }
 
-.hero-heading .gold-text {
-  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 45%, #d97706 100%);
+.portal-gradient-text {
+  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #f59e0b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.hero-description {
-  font-size: clamp(1.05rem, 2vw, 1.2rem);
+.portal-sub {
+  font-size: clamp(1.05rem, 2vw, 1.22rem);
   color: var(--text-secondary);
-  max-width: 760px;
+  max-width: 780px;
   margin: 0 auto 2.5rem;
   line-height: 1.65;
 }
 
-/* Quick Metrics Row */
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 4rem;
-}
-
-.metric-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-earth);
-  border-radius: 16px;
-  padding: 1.5rem 1.25rem;
-  text-align: center;
-  transition: all 0.25s ease;
-}
-
-.metric-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-earth-glow);
-  transform: translateY(-3px);
-}
-
-.metric-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.metric-value {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--grain-honey);
-  margin-bottom: 0.25rem;
-}
-
-.metric-label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-}
-
-/* Interactive Calculator Box */
-.calculator-box {
-  background: linear-gradient(145deg, rgba(38, 30, 20, 0.95), rgba(24, 18, 12, 0.98));
-  border: 2px solid var(--border-earth-glow);
-  border-radius: 24px;
-  padding: 2.75rem;
-  margin-bottom: 4.5rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.calc-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-
-.calc-header h2 {
-  font-size: 2rem;
-  color: #fff;
-  margin-bottom: 0.5rem;
-}
-
-.calc-header p {
-  color: var(--text-secondary);
-  font-size: 1rem;
-}
-
-.calc-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5rem;
-  align-items: center;
-}
-
-.slider-group {
-  margin-bottom: 2rem;
-}
-
-.slider-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-}
-
-.slider-value-pill {
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid var(--grain-gold);
-  color: var(--grain-honey);
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-weight: 800;
-  font-size: 1.1rem;
-}
-
-.colony-slider {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 8px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.1);
-  outline: none;
-}
-
-.colony-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--grain-gold);
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
-  transition: transform 0.15s ease;
-}
-
-.colony-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
-.calc-results {
-  background: rgba(18, 14, 10, 0.75);
-  border: 1px solid var(--border-earth);
-  border-radius: 20px;
-  padding: 2rem;
-}
-
-.calc-result-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.85rem 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-}
-
-.calc-result-row:last-of-type {
-  border-bottom: none;
-}
-
-.calc-result-val {
-  font-weight: 700;
-  color: #fff;
-}
-
-.total-harvest-box {
-  margin-top: 1.5rem;
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.25), rgba(16, 185, 129, 0.15));
-  border: 1px solid var(--grain-gold);
-  border-radius: 16px;
-  padding: 1.25rem 1.5rem;
-  text-align: center;
-}
-
-.total-title {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: var(--grain-light);
-  letter-spacing: 0.08em;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.total-grains {
-  font-size: 2.4rem;
-  font-weight: 900;
-  color: var(--grain-honey);
-  text-shadow: 0 2px 14px rgba(245, 158, 11, 0.4);
-}
-
-/* Branch Explorer Demo */
-.branch-explorer {
-  background: var(--bg-card);
-  border: 1px solid var(--border-earth);
-  border-radius: 24px;
-  padding: 2.5rem;
-  margin-bottom: 4.5rem;
-}
-
-.explorer-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.explorer-header h2 {
-  font-size: 2rem;
-  color: #fff;
-  margin-bottom: 0.5rem;
-}
-
-.branch-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.branch-tab-btn {
-  padding: 0.65rem 1.4rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-earth);
-  border-radius: 12px;
-  color: var(--text-secondary);
-  font-weight: 700;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-}
-
-.branch-tab-btn.active {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: var(--grain-gold);
-  color: var(--grain-honey);
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
-}
-
-.branch-card-preview {
-  background: rgba(18, 14, 10, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 2rem;
-}
-
-.branch-meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.branch-name {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.branch-status-badge {
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.3rem 0.8rem;
-  border-radius: 9999px;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #34d399;
-}
-
-.branch-levels-view {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-
-.level-chip {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  padding: 1rem;
-  transition: all 0.2s ease;
-}
-
-.level-chip.unlocked {
-  background: rgba(245, 158, 11, 0.08);
-  border-color: rgba(245, 158, 11, 0.3);
-}
-
-.level-chip.active-level {
-  border-color: var(--grain-gold);
-  background: rgba(245, 158, 11, 0.15);
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
-}
-
-.level-num {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 0.3rem;
-  text-transform: uppercase;
-}
-
-.level-ants {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.2rem;
-}
-
-.level-bonus {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--grain-honey);
-}
-
-/* 10 Level Growth Table */
-.growth-table-section {
-  margin-bottom: 4.5rem;
-}
-
-.section-title-wrap {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-
-.section-tag {
-  color: var(--grain-gold);
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.4rem;
-}
-
-.section-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #fff;
-}
-
-.table-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-earth);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.styled-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.styled-table th {
-  background: rgba(18, 14, 10, 0.9);
-  padding: 1.1rem 1.5rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--grain-light);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-earth);
-}
-
-.styled-table td {
-  padding: 1rem 1.5rem;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.styled-table tr:hover td {
-  background: rgba(245, 158, 11, 0.06);
-}
-
-.growth-badge {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-/* Rules / Explanation Grid */
-.rules-grid {
+/* Pillars Hub Cards Grid */
+.pillars-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.75rem;
   margin-bottom: 4.5rem;
 }
 
-.rule-box {
+.pillar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-earth);
+  border-radius: 22px;
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.pillar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--card-accent, var(--grain-gold)), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pillar-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-earth-glow);
+  transform: translateY(-5px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+}
+
+.pillar-card:hover::before {
+  opacity: 1;
+}
+
+.pillar-icon-box {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.25rem;
+}
+
+.pillar-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--grain-gold);
+  border: 1px solid var(--border-earth);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+.pillar-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.65rem;
+}
+
+.pillar-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.pillar-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pillar-highlight {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--grain-honey);
+}
+
+.pillar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  transition: gap 0.2s ease;
+}
+
+.pillar-card:hover .pillar-btn {
+  gap: 0.7rem;
+  color: var(--grain-gold);
+}
+
+/* Live Ecosystem Statistics Strip */
+.ecosystem-stats-strip {
+  background: linear-gradient(135deg, rgba(38, 30, 20, 0.8), rgba(24, 18, 12, 0.9));
+  border: 1px solid var(--border-earth);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 4.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.75rem;
+  text-align: center;
+}
+
+.stat-item h3 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--grain-honey);
+  margin-bottom: 0.25rem;
+}
+
+.stat-item p {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+/* ======================================================== */
+/* 2. CASHBACK & REWARDS TAB STYLES                         */
+/* ======================================================== */
+.cashback-section {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.cashback-hero {
+  text-align: center;
+  padding: 1.5rem 0 2rem;
+}
+
+.cashback-calc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-earth);
+  border-radius: 24px;
+  padding: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.merchants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.merchant-card {
+  background: rgba(33, 27, 20, 0.75);
+  border: 1px solid var(--border-earth);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.merchant-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-earth-glow);
+  transform: translateY(-2px);
+}
+
+.merchant-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.merchant-logo {
+  font-size: 1.8rem;
+}
+
+.merchant-name {
+  font-weight: 700;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.merchant-cat {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.merchant-cashback-rate {
+  font-weight: 800;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+/* ======================================================== */
+/* 3. DIGITAL SERVICES TAB STYLES                           */
+/* ======================================================== */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
+
+.service-card {
   background: var(--bg-card);
   border: 1px solid var(--border-earth);
   border-radius: 20px;
@@ -550,127 +426,108 @@
   transition: all 0.25s ease;
 }
 
-.rule-box:hover {
+.service-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-earth-glow);
   transform: translateY(-3px);
 }
 
-.rule-num {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid var(--grain-gold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  color: var(--grain-honey);
-  margin-bottom: 1.25rem;
-}
-
-.rule-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 0.65rem;
-}
-
-.rule-desc {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  font-size: 0.95rem;
-}
-
-/* Referral Link Generator Box */
-.link-generator-card {
-  background: linear-gradient(135deg, rgba(38, 30, 20, 0.95), rgba(24, 18, 12, 0.95));
-  border: 2px dashed var(--border-earth-glow);
-  border-radius: 24px;
-  padding: 3rem 2rem;
-  text-align: center;
-  margin-bottom: 4.5rem;
-}
-
-.link-generator-card h2 {
+.service-icon {
   font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.service-title {
+  font-size: 1.25rem;
+  font-weight: 800;
   color: #fff;
   margin-bottom: 0.5rem;
 }
 
-.link-generator-card p {
-  color: var(--text-secondary);
-  max-width: 560px;
-  margin: 0 auto 2rem;
-}
-
-.link-input-row {
-  display: flex;
-  max-width: 540px;
-  margin: 0 auto 1.5rem;
-  gap: 0.5rem;
-}
-
-.ant-id-input {
-  flex: 1;
-  padding: 0.85rem 1.25rem;
-  background: rgba(18, 14, 10, 0.8);
-  border: 1px solid var(--border-earth);
-  border-radius: 12px;
-  color: #fff;
-  font-size: 1rem;
-  outline: none;
-}
-
-.ant-id-input:focus {
-  border-color: var(--grain-gold);
-}
-
-.copy-btn {
-  padding: 0.85rem 1.75rem;
-  background: linear-gradient(135deg, var(--grain-gold), var(--grain-amber));
-  color: #120e0a;
-  font-weight: 800;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.copy-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
-}
-
-.copy-toast {
-  color: #34d399;
-  font-weight: 700;
+.service-desc {
   font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
-/* Footer */
-.colony-footer {
-  border-top: 1px solid var(--border-earth);
-  background: rgba(18, 14, 10, 0.9);
-  padding: 2.5rem;
-  text-align: center;
+/* ======================================================== */
+/* 4. UNIFIED VAULT TAB STYLES                              */
+/* ======================================================== */
+.vault-box {
+  background: linear-gradient(145deg, rgba(38, 30, 20, 0.95), rgba(24, 18, 12, 0.95));
+  border: 2px solid var(--border-earth-glow);
+  border-radius: 24px;
+  padding: 2.75rem;
+}
+
+.vault-balances-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.vault-bal-card {
+  background: rgba(18, 14, 10, 0.7);
+  border: 1px solid var(--border-earth);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.vault-bal-title {
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
 }
 
-.colony-footer a {
+.vault-bal-amount {
+  font-size: 2rem;
+  font-weight: 900;
   color: var(--grain-honey);
 }
 
-@media (max-width: 768px) {
-  .colony-nav {
-    padding: 1rem 1.5rem;
-  }
-  .calc-grid {
-    grid-template-columns: 1fr;
-  }
-  .link-input-row {
+/* Module Active Banner Notice */
+.module-breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid var(--border-earth);
+  border-radius: 12px;
+}
+
+.breadcrumb-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--grain-honey);
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.breadcrumb-back-btn:hover {
+  transform: translateX(-3px);
+}
+
+@media (max-width: 900px) {
+  .master-nav {
     flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .module-switcher {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .cashback-calc-card {
+    grid-template-columns: 1fr;
   }
 }
