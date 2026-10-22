@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import ColonyTreeVisualizer from './components/ColonyTreeVisualizer'
 import ColonyShareCard from './components/ColonyShareCard'
+import DailySpinWheel from './components/DailySpinWheel'
 import './App.css'
 
 export default function App() {
@@ -9,6 +10,7 @@ export default function App() {
   const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
 
   // Ants & Grains state
+  const [userGrains, setUserGrains] = useState(1840)
   const [colonySubTab, setColonySubTab] = useState('tree') // 'tree' | 'explorer'
   const [directInvites, setDirectInvites] = useState(5)
   const [levelDepth, setLevelDepth] = useState(3)
@@ -141,7 +143,7 @@ export default function App() {
         {/* Quick User / Wallet Indicator */}
         <div className="nav-right-actions">
           <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')}>
-            <span>🌾 1,840 Grains</span>
+            <span>🌾 {userGrains.toLocaleString()} Grains</span>
             <span style={{ opacity: 0.6 }}>|</span>
             <span style={{ color: '#34d399' }}>₹450</span>
           </div>
@@ -431,6 +433,12 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            {/* Feature 3: Daily Grain Spin Wheel & Ant Ranks */}
+            <DailySpinWheel
+              lang={lang}
+              onGrainsWon={(won) => setUserGrains((prev) => prev + won)}
+            />
 
             {/* Feature 1: Hierarchy View Switcher */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1.75rem' }}>
