@@ -159,6 +159,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  user-select: none;
 }
 
 .admin-tab-btn:hover {

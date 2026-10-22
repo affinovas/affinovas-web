@@ -276,24 +276,32 @@ export default function AdminDashboard({ onExitAdmin, onSettingsUpdated, onMerch
       {/* Navigation Sub-Tabs */}
       <div className="admin-tabs-bar">
         <button
+          id="admin-tab-withdrawals"
+          type="button"
           className={`admin-tab-btn ${activeTab === 'withdrawals' ? 'active' : ''}`}
           onClick={() => setActiveTab('withdrawals')}
         >
           ⚡ Payout Clearance Desk {pendingWithdrawalsCount > 0 && <span style={{ background: '#ef4444', color: '#fff', borderRadius: '10px', padding: '0.1rem 0.5rem', fontSize: '0.75rem' }}>{pendingWithdrawalsCount}</span>}
         </button>
         <button
+          id="admin-tab-members"
+          type="button"
           className={`admin-tab-btn ${activeTab === 'members' ? 'active' : ''}`}
           onClick={() => setActiveTab('members')}
         >
           🐜 Member Colony Roster ({members.length})
         </button>
         <button
+          id="admin-tab-merchants"
+          type="button"
           className={`admin-tab-btn ${activeTab === 'merchants' ? 'active' : ''}`}
           onClick={() => setActiveTab('merchants')}
         >
           🛍️ Merchant Rates & Cashback ({merchants.length})
         </button>
         <button
+          id="admin-tab-economics"
+          type="button"
           className={`admin-tab-btn ${activeTab === 'economics' ? 'active' : ''}`}
           onClick={() => setActiveTab('economics')}
         >
