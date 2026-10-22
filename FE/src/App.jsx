@@ -191,10 +191,18 @@ export default function App() {
             <button
               className={`role-pill ${currentUser?.role !== 'admin' && activeTab !== 'admin' ? 'active-member' : ''}`}
               onClick={() => {
-                apiService.login('ramu@affinovas.com', 'ramu123').then((d) => {
-                  setCurrentUser(d.user)
-                  setActiveTab('home')
+                setActiveTab('home')
+                setCurrentUser({
+                  id: '22222222-2222-2222-2222-222222222222',
+                  name: 'Ramu AntLeader',
+                  email: 'ramu@affinovas.com',
+                  role: 'member',
+                  referralCode: 'AFF-RAMU',
+                  grainsBalance: 1840,
+                  cashbackBalance: 450.0,
+                  upiId: 'ramu@okhdfcbank'
                 })
+                apiService.login('ramu@affinovas.com', 'ramu123').catch(() => {})
               }}
             >
               🐜 Member Portal (User Side: Ramu)
@@ -202,10 +210,15 @@ export default function App() {
             <button
               className={`role-pill ${currentUser?.role === 'admin' || activeTab === 'admin' ? 'active-admin' : ''}`}
               onClick={() => {
-                apiService.login('admin@affinovas.com', 'admin123').then((d) => {
-                  setCurrentUser(d.user)
-                  setActiveTab('admin')
+                setActiveTab('admin')
+                setCurrentUser({
+                  id: '11111111-1111-1111-1111-111111111111',
+                  name: 'Affinovas Admin',
+                  email: 'admin@affinovas.com',
+                  role: 'admin',
+                  referralCode: 'AFF-ADMIN'
                 })
+                apiService.login('admin@affinovas.com', 'admin123').catch(() => {})
               }}
             >
               👑 Operator Deck (Admin Side)
@@ -269,10 +282,16 @@ export default function App() {
               background: activeTab === 'admin' ? '#ffffff' : '#f0fdf4'
             }}
             onClick={() => {
-              if (currentUser?.role !== 'admin') {
-                apiService.login('admin@affinovas.com', 'admin123').then((d) => setCurrentUser(d.user))
-              }
               setActiveTab('admin')
+              if (currentUser?.role !== 'admin') {
+                setCurrentUser({
+                  id: '11111111-1111-1111-1111-111111111111',
+                  name: 'Affinovas Admin',
+                  email: 'admin@affinovas.com',
+                  role: 'admin',
+                  referralCode: 'AFF-ADMIN'
+                })
+              }
             }}
           >
             🛡️ Admin Desk

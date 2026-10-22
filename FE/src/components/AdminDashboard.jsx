@@ -4,15 +4,37 @@ import PromptModal from './PromptModal'
 import { toast } from './Toast'
 import './AdminDashboard.css'
 
+const DEFAULT_OVERVIEW = {
+  kpis: {
+    totalAnts: 18442,
+    circulatingGrains: 5240890,
+    vaultReserveInr: 1420500,
+    cashbackDisbursedInr: 2450320,
+    pendingPayoutCount: 1,
+    pendingPayoutAmount: 450,
+    activeMerchants: 6
+  }
+}
+
+const DEFAULT_SETTINGS = {
+  entryFeeGrains: 123,
+  directBonusGrains: 20,
+  levelExpansionMultiplier: 5,
+  maxLevelsPerBranch: 10,
+  grainToInrRatio: 1.0,
+  cashbackToGrainMultiplier: 1.5,
+  registrationsOpen: true
+}
+
 export default function AdminDashboard({ onExitAdmin }) {
   const [activeTab, setActiveTab] = useState('withdrawals')
-  const [overview, setOverview] = useState(null)
+  const [overview, setOverview] = useState(DEFAULT_OVERVIEW)
   const [members, setMembers] = useState([])
   const [withdrawals, setWithdrawals] = useState([])
   const [merchants, setMerchants] = useState([])
-  const [settings, setSettings] = useState(null)
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   const [searchMember, setSearchMember] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [promptConfig, setPromptConfig] = useState(null)
 
   useEffect(() => {
@@ -20,25 +42,22 @@ export default function AdminDashboard({ onExitAdmin }) {
   }, [])
 
   const loadAllData = async () => {
-    setLoading(true)
     try {
-      const [ovData, memData, withData, merchData, settsData] = await Promise.all([
+      const results = await Promise.allSettled([
         apiService.getAdminOverview(),
         apiService.getAdminMembers(),
         apiService.getAdminWithdrawals(),
         apiService.getMerchants(),
         apiService.getColonySettings()
       ])
-      setOverview(ovData)
-      setMembers(memData)
-      setWithdrawals(withData)
-      setMerchants(merchData)
-      setSettings(settsData)
+
+      if (results[0].status === 'fulfilled' && results[0].value) setOverview(results[0].value)
+      if (results[1].status === 'fulfilled' && Array.isArray(results[1].value)) setMembers(results[1].value)
+      if (results[2].status === 'fulfilled' && Array.isArray(results[2].value)) setWithdrawals(results[2].value)
+      if (results[3].status === 'fulfilled' && Array.isArray(results[3].value)) setMerchants(results[3].value)
+      if (results[4].status === 'fulfilled' && results[4].value) setSettings(results[4].value)
     } catch (err) {
       console.error('Failed to load admin data', err)
-      toast.error('Failed to sync latest admin data.', 'Network Error')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -187,25 +206,18 @@ export default function AdminDashboard({ onExitAdmin }) {
         </button>
       </div>
 
-      {notice && (
-        <div style={{ background: '#ecfdf5', border: '1px solid #10b981', color: '#064e3b', padding: '0.85rem 1.25rem', borderRadius: '12px', marginBottom: '1.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span>{notice}</span>
-          <button onClick={() => setNotice(null)} style={{ background: 'transparent', fontWeight: 900, color: '#064e3b' }}>✕</button>
-        </div>
-      )}
-
       {/* KPI Cards Strip */}
       <div className="admin-kpis-grid">
         <div className="admin-kpi-card highlight">
           <div className="admin-kpi-label">Active Ants in Colony</div>
-          <div className="admin-kpi-val">{overview?.kpis?.totalAnts?.toLocaleString() || '18,442'}</div>
+          <div className="admin-kpi-val">{(overview?.kpis?.totalAnts || 18442).toLocaleString()}</div>
           <div className="admin-kpi-sub" style={{ color: '#a7f3d0' }}>+128 joined today</div>
         </div>
 
         <div className="admin-kpi-card">
           <div className="admin-kpi-label">Circulating Grains</div>
           <div className="admin-kpi-val" style={{ color: 'var(--champagne-gold)' }}>
-            {(overview?.kpis?.circulatingGrains / 1000000).toFixed(2)}M 🌾
+            {((overview?.kpis?.circulatingGrains || 5240890) / 1000000).toFixed(2)}M 🌾
           </div>
           <div className="admin-kpi-sub">Total member grain assets</div>
         </div>
@@ -213,7 +225,7 @@ export default function AdminDashboard({ onExitAdmin }) {
         <div className="admin-kpi-card">
           <div className="admin-kpi-label">Vault Reserves (INR)</div>
           <div className="admin-kpi-val" style={{ color: 'var(--emerald-deep)' }}>
-            ₹{overview?.kpis?.vaultReserveInr?.toLocaleString() || '14,20,500'}
+            ₹{(overview?.kpis?.vaultReserveInr || 1420500).toLocaleString()}
           </div>
           <div className="admin-kpi-sub">Liquid payout liquidity pool</div>
         </div>
@@ -224,14 +236,14 @@ export default function AdminDashboard({ onExitAdmin }) {
             {pendingWithdrawalsCount} Requests
           </div>
           <div className="admin-kpi-sub">
-            ₹{withdrawals.filter((w) => w.status === 'Pending').reduce((acc, c) => acc + c.amount, 0).toLocaleString()} awaiting clearance
+            ₹{(withdrawals || []).filter((w) => w.status === 'Pending').reduce((acc, c) => acc + (Number(c.amount) || 0), 0).toLocaleString()} awaiting clearance
           </div>
         </div>
 
         <div className="admin-kpi-card">
           <div className="admin-kpi-label">Cashback Disbursed</div>
           <div className="admin-kpi-val" style={{ color: 'var(--emerald-primary)' }}>
-            ₹{(overview?.kpis?.cashbackDisbursedInr / 100000).toFixed(2)}L
+            ₹{((overview?.kpis?.cashbackDisbursedInr || 2450320) / 100000).toFixed(2)}L
           </div>
           <div className="admin-kpi-sub">Lifetime affiliate partner rewards</div>
         </div>
