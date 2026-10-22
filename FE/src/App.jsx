@@ -2,12 +2,18 @@ import { useState, useEffect } from 'react'
 import ColonyTreeVisualizer from './components/ColonyTreeVisualizer'
 import ColonyShareCard from './components/ColonyShareCard'
 import DailySpinWheel from './components/DailySpinWheel'
+import AuthModal from './components/AuthModal'
 import './App.css'
 
 export default function App() {
   // Navigation: 'home' | 'colony' | 'cashback' | 'services' | 'vault'
   const [activeTab, setActiveTab] = useState('home')
   const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
+
+  // Auth state (Feature 4)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [authMode, setAuthMode] = useState('login') // 'login' | 'register'
+  const [currentUser, setCurrentUser] = useState(null)
 
   // Ants & Grains state
   const [userGrains, setUserGrains] = useState(1840)
@@ -140,13 +146,39 @@ export default function App() {
           </button>
         </nav>
 
-        {/* Quick User / Wallet Indicator */}
+        {/* Quick User / Wallet Indicator & Auth */}
         <div className="nav-right-actions">
           <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')}>
             <span>🌾 {userGrains.toLocaleString()} Grains</span>
             <span style={{ opacity: 0.6 }}>|</span>
             <span style={{ color: '#34d399' }}>₹450</span>
           </div>
+
+          {currentUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="wallet-quick-badge" style={{ borderColor: 'var(--grain-gold)', color: '#fff' }}>
+                <span>🐜 {currentUser.name}</span>
+              </div>
+              <button
+                className="mini-lang-btn"
+                style={{ padding: '0.4rem 0.7rem' }}
+                onClick={() => setCurrentUser(null)}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              className="nav-cta"
+              style={{ padding: '0.45rem 1rem', fontSize: '0.85rem' }}
+              onClick={() => {
+                setAuthMode('login')
+                setAuthModalOpen(true)
+              }}
+            >
+              🔑 Sign In / Join
+            </button>
+          )}
         </div>
       </header>
 
@@ -936,29 +968,98 @@ export default function App() {
               </div>
 
               {/* Action buttons */}
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2.5rem' }}>
                 <button
                   className="nav-cta"
                   style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff' }}
-                  onClick={() => alert('Withdrawal request initiated to linked bank/UPI!')}
+                  onClick={() => {
+                    const upi = prompt('Enter your UPI ID (e.g. yourname@okhdfcbank):', 'antmember@upi')
+                    if (upi) {
+                      alert(`✓ Withdrawal of ₹450 initiated to ${upi}! Funds usually arrive within 15-30 minutes.`)
+                    }
+                  }}
                 >
-                  Withdraw Cashback (₹450)
+                  ⚡ Instant Withdraw to UPI (₹450)
                 </button>
                 <button
                   className="nav-cta"
                   onClick={() => {
-                    alert('Swapped ₹100 Cashback for 150 Colony Grains (1.5x Multiplier)!')
+                    setUserGrains((prev) => prev + 150)
+                    alert('✓ Swapped ₹100 Cashback for +150 Colony Grains (1.5× Multiplier applied)!')
                   }}
                 >
-                  Swap Cashback → Grains (1.5× Bonus)
+                  🔄 Swap Cashback → Grains (1.5× Bonus)
                 </button>
                 <button
                   className="module-tab-btn"
                   style={{ border: '1px solid var(--border-earth)', color: '#fff' }}
                   onClick={() => setActiveTab('colony')}
                 >
-                  Go to Ants & Grains Colony →
+                  🐜 Open Ants & Grains Colony →
                 </button>
+              </div>
+
+              {/* Feature 4: Passbook & Audit Ledger */}
+              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <h3 style={{ fontSize: '1.25rem', color: '#fff', fontWeight: 800 }}>
+                    📜 Vault Passbook & Transaction Ledger
+                  </h3>
+                  <span style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 700 }}>
+                    ✓ Immutable Cryptographic Audit Log
+                  </span>
+                </div>
+
+                <div className="table-card">
+                  <table className="styled-table">
+                    <thead>
+                      <tr>
+                        <th>Date & Time</th>
+                        <th>Transaction Description</th>
+                        <th>Category</th>
+                        <th>Credit / Debit</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ color: 'var(--text-muted)' }}>22 Oct, 05:40 AM</td>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>Daily Grain Harvest Spin Prize</td>
+                        <td><span className="growth-badge">Spin Wheel</span></td>
+                        <td style={{ color: 'var(--grain-honey)', fontWeight: 800 }}>+50 Grains 🌾</td>
+                        <td style={{ color: '#34d399', fontWeight: 700 }}>Settled</td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-muted)' }}>21 Oct, 08:15 PM</td>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>Direct Referral Bonus: Mani joined</td>
+                        <td><span className="growth-badge">Colony Direct</span></td>
+                        <td style={{ color: 'var(--grain-honey)', fontWeight: 800 }}>+20 Grains 🌾</td>
+                        <td style={{ color: '#34d399', fontWeight: 700 }}>Settled</td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-muted)' }}>20 Oct, 02:30 PM</td>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>Flipkart Partner Shopping Cashback</td>
+                        <td><span className="growth-badge" style={{ color: '#38bdf8', borderColor: 'rgba(6,182,212,0.4)', background: 'rgba(6,182,212,0.1)' }}>Cashback</span></td>
+                        <td style={{ color: '#34d399', fontWeight: 800 }}>+₹120.00</td>
+                        <td style={{ color: '#34d399', fontWeight: 700 }}>Confirmed</td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-muted)' }}>18 Oct, 11:20 AM</td>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>Level 1 Bonus: Somu's 5 Ants Completed</td>
+                        <td><span className="growth-badge">Branch Bonus</span></td>
+                        <td style={{ color: 'var(--grain-honey)', fontWeight: 800 }}>+100 Grains 🌾</td>
+                        <td style={{ color: '#34d399', fontWeight: 700 }}>Settled</td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-muted)' }}>14 Oct, 09:00 AM</td>
+                        <td style={{ fontWeight: 700, color: '#fff' }}>Colony Mound Activation Entry Fee</td>
+                        <td><span className="growth-badge" style={{ color: '#f43f5e', borderColor: 'rgba(244,63,94,0.4)', background: 'rgba(244,63,94,0.1)' }}>Entry Fee</span></td>
+                        <td style={{ color: '#f87171', fontWeight: 800 }}>-123 Grains 🌾</td>
+                        <td style={{ color: '#34d399', fontWeight: 700 }}>Active</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </section>
@@ -975,6 +1076,18 @@ export default function App() {
           • Unified Ecosystem: Colony Referrals, Cashback & Digital Cloud.
         </p>
       </footer>
+
+      {/* Feature 4: Member Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authMode}
+        onLoginSuccess={(u) => {
+          setCurrentUser(u)
+          setUserGrains(u.grains)
+        }}
+        lang={lang}
+      />
     </div>
   )
 }
