@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Affinovas.Application.Common.Interfaces;
 using Affinovas.Domain.Entities;
+using Affinovas.Domain.Enums;
 
 namespace Affinovas.Api.Controllers;
 
@@ -7,6 +9,7 @@ namespace Affinovas.Api.Controllers;
 [Route("api/[controller]")]
 public class AdminController : ControllerBase
 {
+    private readonly IUserRepository _userRepository;
     private static readonly ColonySettings _settings = new();
 
     private static readonly List<PartnerMerchant> _merchants = new()
@@ -19,36 +22,45 @@ public class AdminController : ControllerBase
         new PartnerMerchant { Id = Guid.NewGuid(), Name = "Ajio", Category = "Trends & Luxury", CashbackRate = 9.0m, Logo = "✨", RedirectUrl = "https://ajio.com", IsActive = true, TotalClicks = 190 }
     };
 
-    [HttpGet("overview")]
-    public IActionResult GetOverview()
+    public AdminController(IUserRepository userRepository)
     {
-        var users = AuthController.GetInternalUsers();
+        _userRepository = userRepository;
+    }
+
+    [HttpGet("overview")]
+    public async Task<IActionResult> GetOverview()
+    {
+        var users = (await _userRepository.GetAllAsync()).ToList();
         var withdrawals = UserController.GetInternalWithdrawals();
 
         var pendingWithdrawals = withdrawals.Where(w => w.Status == WithdrawalStatus.Pending).ToList();
         var approvedWithdrawals = withdrawals.Where(w => w.Status == WithdrawalStatus.Approved).ToList();
 
+        var realGrains = users.Sum(u => u.GrainsBalance);
+        var realCashbackDisbursed = approvedWithdrawals.Sum(w => w.Amount);
+        var realCashbackHolding = users.Sum(u => u.CashbackBalance);
+
         return Ok(new
         {
             kpis = new
             {
-                totalAnts = 18450 + users.Count,
-                circulatingGrains = 5240890,
-                vaultReserveInr = 1420500.00m,
-                cashbackDisbursedInr = 2450320.00m + approvedWithdrawals.Sum(w => w.Amount),
+                totalAnts = users.Count,
+                circulatingGrains = realGrains,
+                vaultReserveInr = realCashbackHolding,
+                cashbackDisbursedInr = realCashbackDisbursed,
                 pendingPayoutCount = pendingWithdrawals.Count,
                 pendingPayoutAmount = pendingWithdrawals.Sum(w => w.Amount),
                 activeMerchants = _merchants.Count(m => m.IsActive)
             },
-            systemHealth = "Operational 99.98%",
+            systemHealth = "Operational",
             colonySettings = _settings
         });
     }
 
     [HttpGet("members")]
-    public IActionResult GetMembers([FromQuery] string? search)
+    public async Task<IActionResult> GetMembers([FromQuery] string? search)
     {
-        var users = AuthController.GetInternalUsers();
+        var users = await _userRepository.GetAllAsync();
         var query = users.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -79,12 +91,14 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("members/{id}/toggle-status")]
-    public IActionResult ToggleMemberStatus(Guid id)
+    public async Task<IActionResult> ToggleMemberStatus(Guid id)
     {
-        var user = AuthController.GetInternalUsers().FirstOrDefault(u => u.Id == id);
+        var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return NotFound(new { message = "Member not found." });
 
         user.IsActive = !user.IsActive;
+        await _userRepository.UpdateAsync(user);
+
         return Ok(new
         {
             success = true,

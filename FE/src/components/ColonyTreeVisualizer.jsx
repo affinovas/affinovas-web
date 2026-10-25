@@ -1,91 +1,50 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import './ColonyTreeVisualizer.css'
 
-export default function ColonyTreeVisualizer({ lang = 'ta' }) {
-  // Tree state: which branch is expanded and which node is selected for inspection
-  const [expandedBranch, setExpandedBranch] = useState('somu') // 'somu' | 'mani' | 'kavi'
+export default function ColonyTreeVisualizer({ lang = 'ta', currentUser }) {
+  const userName = currentUser?.name || 'Your Account'
+  const userGrains = currentUser?.grainsBalance ?? 0
+  const userDownline = currentUser?.directAntsCount ?? 0
+  const refCode = currentUser?.referralCode || 'AFF-MEMBER'
+
+  // Construct production tree dynamically from current authentic user session
+  const treeData = useMemo(() => {
+    return {
+      id: 'ant-root',
+      name: userName,
+      role: currentUser?.role === 'admin' ? 'Colony Administrator' : 'Colony Founder',
+      totalDownline: userDownline,
+      grainsEarned: userGrains,
+      referralCode: refCode,
+      joinDate: currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'Active Member',
+      branches: [] // Real downlines dynamically attached here
+    }
+  }, [currentUser, userName, userGrains, userDownline, refCode])
+
+  const [expandedBranch, setExpandedBranch] = useState(null)
   const [selectedNode, setSelectedNode] = useState({
     id: 'ant-root',
-    name: 'You (Ramu)',
-    role: 'Colony Founder',
-    level: 3,
-    totalDownline: 160,
-    grainsEarned: 1840,
+    name: userName,
+    role: currentUser?.role === 'admin' ? 'Colony Administrator' : 'Colony Founder',
+    level: 1,
+    totalDownline: userDownline,
+    grainsEarned: userGrains,
     status: 'Active',
-    joinDate: '12 Oct 2026',
-    branchesCount: 3,
+    joinDate: currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'Active Member',
+    branchesCount: userDownline
   })
-
-  // Simulated tree structure
-  const treeData = {
-    id: 'ant-root',
-    name: 'You (Ramu)',
-    role: 'Colony Founder',
-    totalDownline: 160,
-    grainsEarned: 1840,
-    branches: [
-      {
-        id: 'somu',
-        name: 'Somu',
-        avatar: '🐜',
-        role: 'Direct Branch #1',
-        level: 3,
-        antsCount: 155,
-        grainsContributed: 620,
-        status: 'Level 3 Active',
-        joinDate: '14 Oct 2026',
-        downlineLevel1: [
-          { id: 's1', name: 'Anand', antsCount: 25, level: 2, grains: 220 },
-          { id: 's2', name: 'Balu', antsCount: 25, level: 2, grains: 220 },
-          { id: 's3', name: 'Chandru', antsCount: 5, level: 1, grains: 100 },
-          { id: 's4', name: 'Dinesh', antsCount: 5, level: 1, grains: 100 },
-          { id: 's5', name: 'Ezhil', antsCount: 5, level: 1, grains: 100 },
-        ],
-      },
-      {
-        id: 'mani',
-        name: 'Mani',
-        avatar: '🐜',
-        role: 'Direct Branch #2',
-        level: 1,
-        antsCount: 5,
-        grainsContributed: 120,
-        status: 'Level 1 Active',
-        joinDate: '18 Oct 2026',
-        downlineLevel1: [
-          { id: 'm1', name: 'Gopal', antsCount: 0, level: 0, grains: 20 },
-          { id: 'm2', name: 'Hari', antsCount: 0, level: 0, grains: 20 },
-          { id: 'm3', name: 'Inba', antsCount: 0, level: 0, grains: 20 },
-          { id: 'm4', name: 'Jagan', antsCount: 0, level: 0, grains: 20 },
-          { id: 'm5', name: 'Kumar', antsCount: 0, level: 0, grains: 20 },
-        ],
-      },
-      {
-        id: 'kavi',
-        name: 'Kavi',
-        avatar: '🌱',
-        role: 'Direct Branch #3',
-        level: 0,
-        antsCount: 0,
-        grainsContributed: 20,
-        status: 'Fresh Branch',
-        joinDate: '21 Oct 2026',
-        downlineLevel1: [],
-      },
-    ],
-  }
 
   const handleSelectRoot = () => {
     setSelectedNode({
-      id: treeData.id,
+      id: 'ant-root',
       name: treeData.name,
       role: treeData.role,
-      level: 3,
+      level: 1,
       totalDownline: treeData.totalDownline,
       grainsEarned: treeData.grainsEarned,
       status: 'Active',
-      joinDate: '12 Oct 2026',
-      branchesCount: treeData.branches.length,
+      joinDate: treeData.joinDate,
+      branchesCount: treeData.branches.length
     })
   }
 
@@ -100,21 +59,7 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
       grainsEarned: branch.grainsContributed,
       status: branch.status,
       joinDate: branch.joinDate,
-      isBranch: true,
-    })
-  }
-
-  const handleSelectSubNode = (subNode, parentName) => {
-    setSelectedNode({
-      id: subNode.id,
-      name: subNode.name,
-      role: `Downline under ${parentName}`,
-      level: subNode.level,
-      totalDownline: subNode.antsCount,
-      grainsEarned: subNode.grains,
-      status: subNode.level > 0 ? `Level ${subNode.level} Active` : 'Member',
-      joinDate: '20 Oct 2026',
-      isSubNode: true,
+      isBranch: true
     })
   }
 
@@ -136,7 +81,7 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
 
         <div className="tree-stats-badge">
           <span>🌾 Active Branches: <strong>{treeData.branches.length}</strong></span>
-          <span>👥 Total Ants: <strong>{treeData.totalDownline}</strong></span>
+          <span>👥 Downlines: <strong>{treeData.totalDownline}</strong></span>
         </div>
       </div>
 
@@ -153,7 +98,7 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
               <div className="node-avatar">🐜</div>
               <div className="node-info">
                 <span className="node-name">{treeData.name}</span>
-                <span className="node-tag">Founder</span>
+                <span className="node-tag">{treeData.role}</span>
               </div>
               <div className="node-pill">{treeData.branches.length} Direct Branches</div>
             </div>
@@ -166,41 +111,61 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
           </div>
 
           {/* Level 1: Direct Referral Branches */}
-          <div className="tree-level-row branches-row">
-            {treeData.branches.map((b) => (
-              <div
-                key={b.id}
-                className={`tree-node branch-node ${expandedBranch === b.id ? 'expanded' : ''} ${selectedNode?.id === b.id ? 'selected' : ''}`}
-                onClick={() => handleSelectBranch(b)}
-              >
-                <div className="node-badge-level">Lvl {b.level}</div>
-                <div className="node-avatar">{b.avatar}</div>
-                <div className="node-info">
-                  <span className="node-name">{b.name}</span>
-                  <span className="node-tag">{b.role}</span>
+          {treeData.branches.length > 0 ? (
+            <div className="tree-level-row branches-row">
+              {treeData.branches.map((b) => (
+                <div
+                  key={b.id}
+                  className={`tree-node branch-node ${expandedBranch === b.id ? 'expanded' : ''} ${selectedNode?.id === b.id ? 'selected' : ''}`}
+                  onClick={() => handleSelectBranch(b)}
+                >
+                  <div className="node-badge-level">Lvl {b.level}</div>
+                  <div className="node-avatar">{b.avatar}</div>
+                  <div className="node-info">
+                    <span className="node-name">{b.name}</span>
+                    <span className="node-tag">{b.role}</span>
+                  </div>
+                  <div className="node-stat-pill">
+                    {b.antsCount} Ants • +{b.grainsContributed} 🌾
+                  </div>
                 </div>
-                <div className="node-stat-pill">
-                  {b.antsCount} Ants • +{b.grainsContributed} 🌾
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '2rem 1.5rem',
+                background: 'rgba(255, 255, 255, 0.04)',
+                borderRadius: '18px',
+                border: '1px dashed rgba(255, 255, 255, 0.2)',
+                margin: '1.25rem auto 0',
+                maxWidth: '480px'
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.65rem' }}>🌱</div>
+              <h4 style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '0.4rem', fontWeight: 700 }}>
+                {lang === 'ta' ? 'கிளை நெட்வொர்க் தொடக்கப் புள்ளி' : 'Colony Tree Starting Node'}
+              </h4>
+              <p style={{ color: 'rgba(255, 255, 255, 0.72)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
+                {lang === 'ta'
+                  ? `உங்களின் குறிப்புக் குறியீடு (${refCode}) வழியே புதிய உறுப்பினர்களை அழைக்கவும். உறுப்பினர்கள் சேரும்போது உங்கள் மரத்தில் நேரடி கிளைகளாகத் தோன்றுவர்!`
+                  : `Your colony tree starts with you! When ants register with your invite pass (${refCode}), their live branch nodes will dynamically connect here.`}
+              </p>
+            </div>
+          )}
 
           {/* Level 2 Sub-Downline View for Currently Expanded Branch */}
-          {currentBranchObj && currentBranchObj.downlineLevel1.length > 0 && (
+          {currentBranchObj && currentBranchObj.downlineLevel1?.length > 0 && (
             <div className="sub-tree-wrapper">
               <div className="sub-tree-indicator">
-                <span>↳ {currentBranchObj.name}'s Level 1 Sub-Mound (5 Ants)</span>
+                <span>↳ {currentBranchObj.name}'s Level 1 Sub-Mound</span>
                 <span className="sub-tree-badge">5× Multiplier Active</span>
               </div>
 
               <div className="tree-level-row sub-nodes-row">
                 {currentBranchObj.downlineLevel1.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className={`tree-node sub-node ${selectedNode?.id === sub.id ? 'selected' : ''}`}
-                    onClick={() => handleSelectSubNode(sub, currentBranchObj.name)}
-                  >
+                  <div key={sub.id} className="tree-node sub-node">
                     <div className="node-avatar-sm">🐜</div>
                     <div className="node-name-sm">{sub.name}</div>
                     <div className="node-ants-sm">{sub.antsCount} ants</div>
@@ -208,12 +173,6 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {currentBranchObj && currentBranchObj.downlineLevel1.length === 0 && (
-            <div className="empty-sub-branch">
-              <p>🌱 {currentBranchObj.name} is a fresh invite! Once they invite their 5 friends, their Level 1 will appear here.</p>
             </div>
           )}
         </div>
@@ -246,7 +205,7 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
 
             <div className="inspector-metric-card">
               <div className="metric-title">{lang === 'ta' ? 'தற்போதைய நிலை' : 'Active Level'}</div>
-              <div className="metric-val">Level {selectedNode?.level ?? 0} / 10</div>
+              <div className="metric-val">Level {selectedNode?.level ?? 1} / 10</div>
             </div>
 
             <div className="inspector-metric-card">
@@ -261,12 +220,12 @@ export default function ColonyTreeVisualizer({ lang = 'ta' }) {
           <div className="branch-progress-meter">
             <div className="meter-header">
               <span>{lang === 'ta' ? 'பிராஞ்ச் நிலை முன்னேற்றம்' : '10-Level Chart Progress'}</span>
-              <span>{((selectedNode?.level || 0) / 10) * 100}%</span>
+              <span>{((selectedNode?.level || 1) / 10) * 100}%</span>
             </div>
             <div className="meter-track">
               <div
                 className="meter-fill"
-                style={{ width: `${Math.max(5, ((selectedNode?.level || 0) / 10) * 100)}%` }}
+                style={{ width: `${Math.max(10, ((selectedNode?.level || 1) / 10) * 100)}%` }}
               ></div>
             </div>
             <p className="meter-footnote">

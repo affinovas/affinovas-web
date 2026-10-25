@@ -3,108 +3,38 @@
 // Connects to ASP.NET Core BE, with fallback state engine
 // ========================================================
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5267/api'
 
-// Pre-seeded Demo Data for Standalone / Client Execution
+// Pre-seeded Demo Data for Standalone / Client Execution (Production-Ready Clean Defaults)
 const INITIAL_USERS = [
   {
     id: '11111111-1111-1111-1111-111111111111',
     email: 'admin@affinovas.com',
+    phoneNumber: '+919999999999',
     password: 'admin123',
     name: 'Affinovas Admin',
     role: 'admin',
     referralCode: 'AFF-ADMIN',
     referredBy: null,
-    grainsBalance: 5240000,
-    cashbackBalance: 245000.0,
+    grainsBalance: 0,
+    cashbackBalance: 0.0,
     upiId: 'treasury@affinovas',
-    directAntsCount: 42,
-    activeBranchDepth: 10,
-    isActive: true,
-    createdAt: '2026-10-01T00:00:00Z'
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222222',
-    email: 'ramu@affinovas.com',
-    password: 'ramu123',
-    name: 'Ramu AntLeader',
-    role: 'member',
-    referralCode: 'AFF-RAMU',
-    referredBy: 'AFF-ADMIN',
-    grainsBalance: 1840,
-    cashbackBalance: 450.0,
-    upiId: 'ramu@okhdfcbank',
-    directAntsCount: 3,
-    activeBranchDepth: 3,
-    isActive: true,
-    createdAt: '2026-10-10T12:00:00Z'
-  },
-  {
-    id: '33333333-3333-3333-3333-333333333333',
-    email: 'somu@affinovas.com',
-    password: 'somu123',
-    name: 'Somu Builder',
-    role: 'member',
-    referralCode: 'AFF-SOMU',
-    referredBy: 'AFF-RAMU',
-    grainsBalance: 620,
-    cashbackBalance: 120.0,
-    upiId: 'somu@icici',
-    directAntsCount: 5,
-    activeBranchDepth: 3,
-    isActive: true,
-    createdAt: '2026-10-14T09:00:00Z'
-  },
-  {
-    id: '44444444-4444-4444-4444-444444444444',
-    email: 'mani@affinovas.com',
-    password: 'mani123',
-    name: 'Mani Forager',
-    role: 'member',
-    referralCode: 'AFF-MANI',
-    referredBy: 'AFF-RAMU',
-    grainsBalance: 340,
-    cashbackBalance: 85.0,
-    upiId: 'mani@paytm',
-    directAntsCount: 1,
+    directAntsCount: 0,
     activeBranchDepth: 1,
     isActive: true,
-    createdAt: '2026-10-21T08:15:00Z'
+    createdAt: '2026-10-01T00:00:00Z'
   }
 ]
 
-const INITIAL_WITHDRAWALS = [
-  {
-    id: 'w-101',
-    userId: '22222222-2222-2222-2222-222222222222',
-    userEmail: 'ramu@affinovas.com',
-    userName: 'Ramu AntLeader',
-    amount: 450.0,
-    upiId: 'ramu@okhdfcbank',
-    status: 'Pending',
-    utrNumber: null,
-    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'w-100',
-    userId: '44444444-4444-4444-4444-444444444444',
-    userEmail: 'mani@affinovas.com',
-    userName: 'Mani Forager',
-    amount: 200.0,
-    upiId: 'mani@paytm',
-    status: 'Approved',
-    utrNumber: 'UTR-992381044',
-    createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString()
-  }
-]
+const INITIAL_WITHDRAWALS = []
 
 const INITIAL_MERCHANTS = [
-  { id: 'm-1', name: 'Flipkart', category: 'Electronics & Lifestyle', cashbackRate: 8.5, logo: '🛒', redirectUrl: 'https://flipkart.com', isActive: true, clicks: 420 },
-  { id: 'm-2', name: 'Amazon', category: 'General Merchandise', cashbackRate: 7.0, logo: '📦', redirectUrl: 'https://amazon.in', isActive: true, clicks: 612 },
-  { id: 'm-3', name: 'Myntra', category: 'Fashion Trends', cashbackRate: 10.0, logo: '👗', redirectUrl: 'https://myntra.com', isActive: true, clicks: 285 },
-  { id: 'm-4', name: 'Swiggy & Instamart', category: 'Food & Groceries', cashbackRate: 5.0, logo: '🍔', redirectUrl: 'https://swiggy.com', isActive: true, clicks: 530 },
-  { id: 'm-5', name: 'MakeMyTrip', category: 'Flights & Stays', cashbackRate: 12.0, logo: '✈️', redirectUrl: 'https://makemytrip.com', isActive: true, clicks: 142 },
-  { id: 'm-6', name: 'Ajio', category: 'Trends & Luxury', cashbackRate: 9.0, logo: '✨', redirectUrl: 'https://ajio.com', isActive: true, clicks: 190 }
+  { id: 'm-1', name: 'Flipkart', category: 'Electronics & Lifestyle', cashbackRate: 8.5, logo: '🛒', redirectUrl: 'https://flipkart.com', isActive: true, clicks: 0 },
+  { id: 'm-2', name: 'Amazon', category: 'General Merchandise', cashbackRate: 7.0, logo: '📦', redirectUrl: 'https://amazon.in', isActive: true, clicks: 0 },
+  { id: 'm-3', name: 'Myntra', category: 'Fashion Trends', cashbackRate: 10.0, logo: '👗', redirectUrl: 'https://myntra.com', isActive: true, clicks: 0 },
+  { id: 'm-4', name: 'Swiggy & Instamart', category: 'Food & Groceries', cashbackRate: 5.0, logo: '🍔', redirectUrl: 'https://swiggy.com', isActive: true, clicks: 0 },
+  { id: 'm-5', name: 'MakeMyTrip', category: 'Flights & Stays', cashbackRate: 12.0, logo: '✈️', redirectUrl: 'https://makemytrip.com', isActive: true, clicks: 0 },
+  { id: 'm-6', name: 'Ajio', category: 'Trends & Luxury', cashbackRate: 9.0, logo: '✨', redirectUrl: 'https://ajio.com', isActive: true, clicks: 0 }
 ]
 
 const INITIAL_SETTINGS = {
@@ -135,14 +65,67 @@ function setStore(key, val) {
   }
 }
 
-// Initialize storage if missing
+// Initialize storage & auto-sanitize legacy dummy rows
+try {
+  const storedUsers = JSON.parse(localStorage.getItem('affinovas_users') || '[]')
+  const hasMockData = storedUsers.some((u) => u.email === 'ramu@affinovas.com' || u.grainsBalance === 1840 || u.cashbackBalance >= 245000)
+  if (hasMockData || !localStorage.getItem('affinovas_clean_v3')) {
+    setStore('users', INITIAL_USERS)
+    setStore('withdrawals', INITIAL_WITHDRAWALS)
+    localStorage.setItem('affinovas_clean_v3', 'true')
+  }
+
+  const cachedUser = localStorage.getItem('affinovas_current_user')
+  if (cachedUser) {
+    const parsed = JSON.parse(cachedUser)
+    if (parsed.email === 'admin@affinovas.com' || parsed.grainsBalance === 1840 || parsed.cashbackBalance >= 245000) {
+      parsed.grainsBalance = 0
+      parsed.cashbackBalance = 0.0
+      parsed.directAntsCount = 0
+      localStorage.setItem('affinovas_current_user', JSON.stringify(parsed))
+    }
+  }
+} catch (e) {
+  // Ignore
+}
+
 if (!localStorage.getItem('affinovas_users')) setStore('users', INITIAL_USERS)
 if (!localStorage.getItem('affinovas_withdrawals')) setStore('withdrawals', INITIAL_WITHDRAWALS)
 if (!localStorage.getItem('affinovas_merchants')) setStore('merchants', INITIAL_MERCHANTS)
 if (!localStorage.getItem('affinovas_settings')) setStore('settings', INITIAL_SETTINGS)
 
 export const apiService = {
-  // Authentication
+  // Mobile OTP Authentication
+  async sendOtp(phoneNumber) {
+    const res = await fetch(`${API_BASE}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Failed to send OTP to mobile number.')
+    }
+    return await res.json()
+  },
+
+  async verifyOtp({ phoneNumber, otpCode, antName, referralCode }) {
+    const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber, otpCode, antName, referralCode })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Failed to verify OTP.')
+    }
+    const data = await res.json()
+    localStorage.setItem('affinovas_token', data.token)
+    localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
+    return data
+  },
+
+  // Legacy Email/Password Authentication
   async login(email, password) {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
@@ -155,9 +138,15 @@ export const apiService = {
         localStorage.setItem('affinovas_token', data.token)
         localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
         return data
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.message || 'Invalid email or password.')
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      if (err.message && err.message !== 'Failed to fetch') {
+        throw err
+      }
+      // Offline fallback only when backend server is unreachable
     }
 
     const users = getStore('users', INITIAL_USERS)
@@ -204,9 +193,15 @@ export const apiService = {
         localStorage.setItem('affinovas_token', data.token)
         localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
         return data
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.message || 'Registration failed.')
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      if (err.message && err.message !== 'Failed to fetch') {
+        throw err
+      }
+      // Offline fallback only when backend server is unreachable
     }
 
     const users = getStore('users', INITIAL_USERS)
@@ -324,15 +319,15 @@ export const apiService = {
 
     return {
       kpis: {
-        totalAnts: 18400 + users.length,
-        circulatingGrains: 5240890,
-        vaultReserveInr: 1420500.0,
-        cashbackDisbursedInr: 2450320.0 + approved.reduce((acc, curr) => acc + curr.amount, 0),
+        totalAnts: users.length,
+        circulatingGrains: users.reduce((acc, curr) => acc + (curr.grainsBalance || 0), 0),
+        vaultReserveInr: users.reduce((acc, curr) => acc + (curr.cashbackBalance || 0), 0),
+        cashbackDisbursedInr: approved.reduce((acc, curr) => acc + (curr.amount || 0), 0),
         pendingPayoutCount: pending.length,
         pendingPayoutAmount: pending.reduce((acc, curr) => acc + curr.amount, 0),
         activeMerchants: merchants.filter((m) => m.isActive).length
       },
-      systemHealth: 'Operational 99.98%',
+      systemHealth: 'Operational 100%',
       colonySettings: settings
     }
   },

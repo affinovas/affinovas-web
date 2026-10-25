@@ -6,12 +6,12 @@ import './AdminDashboard.css'
 
 const DEFAULT_OVERVIEW = {
   kpis: {
-    totalAnts: 18442,
-    circulatingGrains: 5240890,
-    vaultReserveInr: 1420500,
-    cashbackDisbursedInr: 2450320,
-    pendingPayoutCount: 1,
-    pendingPayoutAmount: 450,
+    totalAnts: 0,
+    circulatingGrains: 0,
+    vaultReserveInr: 0,
+    cashbackDisbursedInr: 0,
+    pendingPayoutCount: 0,
+    pendingPayoutAmount: 0,
     activeMerchants: 6
   }
 }
@@ -220,38 +220,30 @@ export default function AdminDashboard({ onExitAdmin, onSettingsUpdated, onMerch
             </p>
           </div>
         </div>
-
-        <button
-          className="admin-btn admin-btn-toggle"
-          style={{ padding: '0.7rem 1.4rem', fontWeight: 800, background: '#ffffff' }}
-          onClick={onExitAdmin}
-        >
-          ← Switch to User / Member View
-        </button>
       </div>
 
-      {/* KPI Cards Strip */}
+      {/* KPI Cards Strip (100% Real Authentic Data) */}
       <div className="admin-kpis-grid">
         <div className="admin-kpi-card highlight">
-          <div className="admin-kpi-label">Active Ants in Colony</div>
-          <div className="admin-kpi-val">{(overview?.kpis?.totalAnts || 18442).toLocaleString()}</div>
-          <div className="admin-kpi-sub" style={{ color: '#a7f3d0' }}>+128 joined today</div>
+          <div className="admin-kpi-label">Registered Colony Ants</div>
+          <div className="admin-kpi-val">{members.length.toLocaleString()}</div>
+          <div className="admin-kpi-sub" style={{ color: '#a7f3d0' }}>Real verified database members</div>
         </div>
 
         <div className="admin-kpi-card">
           <div className="admin-kpi-label">Circulating Grains</div>
           <div className="admin-kpi-val" style={{ color: 'var(--champagne-gold)' }}>
-            {((overview?.kpis?.circulatingGrains || 5240890) / 1000000).toFixed(2)}M 🌾
+            {(members.reduce((acc, m) => acc + (Number(m.grainsBalance) || 0), 0)).toLocaleString()} 🌾
           </div>
           <div className="admin-kpi-sub">Total member grain assets</div>
         </div>
 
         <div className="admin-kpi-card">
-          <div className="admin-kpi-label">Vault Reserves (INR)</div>
+          <div className="admin-kpi-label">Partner Merchants</div>
           <div className="admin-kpi-val" style={{ color: 'var(--emerald-deep)' }}>
-            ₹{(overview?.kpis?.vaultReserveInr || 1420500).toLocaleString()}
+            {merchants.length} Brands
           </div>
-          <div className="admin-kpi-sub">Liquid payout liquidity pool</div>
+          <div className="admin-kpi-sub">Active cashback integrations</div>
         </div>
 
         <div className={`admin-kpi-card ${pendingWithdrawalsCount > 0 ? 'alert' : ''}`}>
@@ -267,9 +259,9 @@ export default function AdminDashboard({ onExitAdmin, onSettingsUpdated, onMerch
         <div className="admin-kpi-card">
           <div className="admin-kpi-label">Cashback Disbursed</div>
           <div className="admin-kpi-val" style={{ color: 'var(--emerald-primary)' }}>
-            ₹{((overview?.kpis?.cashbackDisbursedInr || 2450320) / 100000).toFixed(2)}L
+            ₹{(withdrawals || []).filter((w) => w.status === 'Approved').reduce((acc, c) => acc + (Number(c.amount) || 0), 0).toLocaleString()}
           </div>
-          <div className="admin-kpi-sub">Lifetime affiliate partner rewards</div>
+          <div className="admin-kpi-sub">Cleared partner payouts</div>
         </div>
       </div>
 

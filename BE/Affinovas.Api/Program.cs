@@ -88,6 +88,13 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// Initialize SQLite database schema and seed secure hashed accounts
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<Affinovas.Infrastructure.Data.SqliteDbInitializer>();
+    dbInitializer.Initialize();
+}
+
 // Configure HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {

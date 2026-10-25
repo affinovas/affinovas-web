@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { apiService } from '../services/apiService'
 import './AuthModal.css'
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLoginSuccess, lang = 'ta', colonyConfig }) {
+export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLoginSuccess, lang = 'ta', onLangChange, colonyConfig }) {
   const [mode, setMode] = useState(initialMode) // 'login' | 'register'
   const [identifier, setIdentifier] = useState('')
   const [antName, setAntName] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [refCode, setRefCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -36,7 +37,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
     e.preventDefault()
     setError('')
     if (mode === 'register' && !registrationsOpen) {
-      setError('New colony registrations are currently paused by the Master Administrator.')
+      setError(lang === 'ta' 
+        ? 'புதிய காலனி பதிவுகள் தற்காலிகமாக நிர்வாகியால் நிறுத்தப்பட்டுள்ளன.'
+        : 'New colony registrations are currently paused by the Master Administrator.')
       return
     }
     setLoading(true)
@@ -61,7 +64,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
         onClose()
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please check credentials.')
+      setError(err.message || (lang === 'ta' ? 'உள்நுழைவு தோல்வியடைந்தது. விவரங்களைச் சரிபார்க்கவும்.' : 'Authentication failed. Please check credentials.'))
     } finally {
       setLoading(false)
     }
@@ -70,13 +73,32 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
   return (
     <div className="auth-overlay" onClick={onClose}>
       <div className="auth-modal-card" onClick={(e) => e.stopPropagation()}>
-        <button className="auth-close-btn" onClick={onClose}>✕</button>
+        {/* Modal Top Bar with Language Switcher and Close Button */}
+        <div className="auth-modal-top-bar">
+          <div className="auth-modal-lang-toggle">
+            <button
+              type="button"
+              className={`auth-modal-lang-btn ${lang === 'en' ? 'active' : ''}`}
+              onClick={() => onLangChange?.('en')}
+            >
+              English
+            </button>
+            <button
+              type="button"
+              className={`auth-modal-lang-btn ${lang === 'ta' ? 'active' : ''}`}
+              onClick={() => onLangChange?.('ta')}
+            >
+              தமிழ்
+            </button>
+          </div>
+          <button className="auth-close-btn" onClick={onClose}>✕</button>
+        </div>
 
         <div className="auth-header">
           <div className="auth-brand-badge">🐜</div>
           <h2 className="auth-title">
             {mode === 'login'
-              ? lang === 'ta' ? 'காலனி உள்நுழைவு' : 'Member & Admin Login'
+              ? lang === 'ta' ? 'காலனி உள்நுழைவு' : 'Colony Sign In'
               : lang === 'ta' ? 'புதிய எறும்பு பதிவு' : 'Join Affinovas Colony'}
           </h2>
           <p className="auth-sub">
@@ -138,11 +160,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === 'register' && (
             <div className="auth-input-group">
-              <label className="auth-label">Ant Name / Handle</label>
+              <label className="auth-label">
+                {lang === 'ta' ? 'எறும்பு பெயர் / பயனர் பெயர்' : 'Ant Name / Handle'}
+              </label>
               <input
                 type="text"
                 className="auth-input"
-                placeholder="e.g. Ant_Ramu"
+                placeholder={lang === 'ta' ? 'எ.கா. Ant_Ramu' : 'e.g. Ant_Ramu'}
                 value={antName}
                 onChange={(e) => setAntName(e.target.value)}
                 required
@@ -152,7 +176,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
 
           <div className="auth-input-group">
             <label className="auth-label">
-              {mode === 'register' ? 'Email / Mobile' : 'Email Address'}
+              {mode === 'register'
+                ? lang === 'ta' ? 'மின்னஞ்சல் / கைபேசி எண்' : 'Email Address / Mobile'
+                : lang === 'ta' ? 'மின்னஞ்சல் முகவரி' : 'Email Address'}
             </label>
             <input
               type="text"
@@ -165,22 +191,37 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
           </div>
 
           <div className="auth-input-group">
-            <label className="auth-label">Password</label>
-            <input
-              type="password"
-              className="auth-input"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <label className="auth-label">
+              {lang === 'ta' ? 'கடவுச்சொல் (Password)' : 'Password'}
+            </label>
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="auth-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? '👁️' : '🙈'}
+              </button>
+            </div>
           </div>
 
           {mode === 'register' && (
             <div className="auth-input-group">
               <div className="auth-ref-label-row">
-                <label className="auth-label">Referral Code (Inviter Ant)</label>
-                <span className="auth-ref-badge">Auto Applied</span>
+                <label className="auth-label">
+                  {lang === 'ta' ? 'பரிந்துரை குறியீடு (அழைத்த எறும்பு)' : 'Referral Code (Inviter Ant)'}
+                </label>
+                <span className="auth-ref-badge">{lang === 'ta' ? 'தானாக இணைக்கப்பட்டது' : 'Auto Applied'}</span>
               </div>
               <input
                 type="text"
@@ -190,18 +231,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
                 onChange={(e) => setRefCode(e.target.value)}
               />
               <p className="auth-entry-notice">
-                🪙 Note: 123 grains colony joining fee unlocks your personal 10-level branch tree.
+                {lang === 'ta'
+                  ? `🪙 குறிப்பு: ${entryFee} தானியங்கள் காலனி நுழைவுக் கட்டணம் உங்களின் 10-நிலை கிளை மரத்தைத் திறக்கும்.`
+                  : `🪙 Note: ${entryFee} grains colony joining fee unlocks your personal ${maxDepth}-level branch tree.`}
               </p>
             </div>
           )}
 
           <button type="submit" className="auth-submit-btn" disabled={loading}>
             {loading ? (
-              'Authenticating...'
+              lang === 'ta' ? 'சரிபார்க்கிறது...' : 'Authenticating...'
             ) : mode === 'login' ? (
-              'Enter Colony Portal →'
+              lang === 'ta' ? 'காலனி தளத்திற்குள் நுழையவும் →' : 'Enter Colony Portal →'
             ) : (
-              'Activate Ant Profile (123 Grains) →'
+              lang === 'ta' ? `எறும்பு சுயவிவரத்தை இயக்கவும் (${entryFee} தானியங்கள்) →` : `Activate Ant Profile (${entryFee} Grains) →`
             )}
           </button>
         </form>
@@ -209,16 +252,16 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onLo
         <div className="auth-footer-text">
           {mode === 'login' ? (
             <span>
-              New to the colony?{' '}
+              {lang === 'ta' ? 'காலனிக்கு புதியவரா? ' : 'New to the colony? '}
               <button className="auth-switch-link" onClick={() => setMode('register')}>
-                Join as an Ant
+                {lang === 'ta' ? 'புதிய எறும்பாக இணையுங்கள்' : 'Join as an Ant'}
               </button>
             </span>
           ) : (
             <span>
-              Already an ant member?{' '}
+              {lang === 'ta' ? 'ஏற்கனவே எறும்பு உறுப்பினரா? ' : 'Already an ant member? '}
               <button className="auth-switch-link" onClick={() => setMode('login')}>
-                Sign In
+                {lang === 'ta' ? 'உள்நுழையவும்' : 'Sign In'}
               </button>
             </span>
           )}

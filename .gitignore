@@ -42,3 +42,8 @@ yarn-error.log*
 ## Operating System files
 .DS_Store
 Thumbs.db
+
+## SQLite Databases
+*.db
+*.db-shm
+*.db-wal

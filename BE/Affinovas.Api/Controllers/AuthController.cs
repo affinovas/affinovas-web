@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Affinovas.Application.Common.Interfaces;
 using Affinovas.Domain.Entities;
 using Affinovas.Domain.Enums;
 using Affinovas.Infrastructure.Authentication;
@@ -14,53 +15,36 @@ namespace Affinovas.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    // In-memory user store for demo/standalone operation, backed by SQL schema when configured
-    private static readonly List<User> _users = new()
-    {
-        new User
-        {
-            Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            Email = "admin@affinovas.com",
-            PasswordHash = "admin123",
-            FirstName = "Affinovas",
-            LastName = "Admin",
-            Role = UserRole.Admin,
-            ReferralCode = "AFF-ADMIN",
-            GrainsBalance = 5000000,
-            CashbackBalance = 240000.00m,
-            IsActive = true
-        },
-        new User
-        {
-            Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            Email = "ramu@affinovas.com",
-            PasswordHash = "ramu123",
-            FirstName = "Ramu",
-            LastName = "AntLeader",
-            Role = UserRole.Member,
-            ReferralCode = "AFF-RAMU",
-            GrainsBalance = 1840,
-            CashbackBalance = 450.00m,
-            UpiId = "ramu@okhdfcbank",
-            DirectAntsCount = 2,
-            ActiveBranchDepth = 3,
-            IsActive = true
-        }
-    };
+    private readonly IUserRepository _userRepository;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public AuthController(IConfiguration configuration)
+    public AuthController(
+        IConfiguration configuration,
+        IUserRepository userRepository,
+        IPasswordHasher passwordHasher)
     {
         _configuration = configuration;
+        _userRepository = userRepository;
+        _passwordHasher = passwordHasher;
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginDto request)
+    public async Task<IActionResult> Login([FromBody] LoginDto request)
     {
-        var user = _users.FirstOrDefault(u => 
-            u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) && 
-            u.PasswordHash == request.Password);
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new { message = "Email and password are required." });
+        }
 
+        var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        // Verify password using BCrypt
+        var isValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
+        if (!isValid)
         {
             return Unauthorized(new { message = "Invalid email or password." });
         }
@@ -91,34 +75,46 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromBody] RegisterDto request)
+    public async Task<IActionResult> Register([FromBody] RegisterDto request)
     {
-        if (_users.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new { message = "Email and password are required." });
+        }
+
+        if (await _userRepository.EmailExistsAsync(request.Email))
         {
             return BadRequest(new { message = "An ant with this email is already registered." });
         }
 
-        var refCode = "AFF-" + (request.FirstName?.ToUpper().Replace(" ", "") ?? "ANT") + new Random().Next(100, 999);
+        var cleanName = (request.FirstName ?? "Ant").Trim();
+        var safePrefix = new string(cleanName.ToUpper().Where(char.IsLetter).Take(5).ToArray());
+        if (string.IsNullOrEmpty(safePrefix)) safePrefix = "ANT";
+        var refCode = $"AFF-{safePrefix}{Random.Shared.Next(100, 999)}";
+
+        // Securely hash password with BCrypt
+        var passwordHash = _passwordHasher.HashPassword(request.Password);
 
         var newUser = new User
         {
             Id = Guid.NewGuid(),
-            Email = request.Email,
-            PasswordHash = request.Password,
-            FirstName = request.FirstName,
-            LastName = request.LastName ?? "",
+            Email = request.Email.Trim(),
+            PasswordHash = passwordHash,
+            FirstName = cleanName,
+            LastName = request.LastName?.Trim() ?? string.Empty,
             Role = UserRole.Member,
             ReferralCode = refCode,
             ReferredBy = request.ReferralCode,
             GrainsBalance = 50, // Welcome gift grains
             CashbackBalance = 0,
-            UpiId = request.UpiId,
+            UpiId = request.UpiId ?? $"{cleanName.ToLower()}@upi",
             DirectAntsCount = 0,
             ActiveBranchDepth = 1,
-            IsActive = true
+            IsActive = true,
+            CreatedAtUtc = DateTime.UtcNow
         };
 
-        _users.Add(newUser);
+        await _userRepository.CreateAsync(newUser);
 
         var token = GenerateJwtToken(newUser);
         return Ok(new
@@ -140,8 +136,153 @@ public class AuthController : ControllerBase
         });
     }
 
+    // Static in-memory OTP cache for instantaneous high-speed verification
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string Code, DateTime ExpiresAt)> OtpCache = new();
+
+    [HttpPost("send-otp")]
+    public async Task<IActionResult> SendOtp([FromBody] SendOtpDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+        {
+            return BadRequest(new { message = "Phone number is required." });
+        }
+
+        // Normalize Indian phone numbers: remove spaces, dashes, +91
+        var digitsOnly = new string(request.PhoneNumber.Where(char.IsDigit).ToArray());
+        if (digitsOnly.Length > 10 && digitsOnly.StartsWith("91"))
+        {
+            digitsOnly = digitsOnly.Substring(2);
+        }
+        if (digitsOnly.Length != 10)
+        {
+            return BadRequest(new { message = "Please enter a valid 10-digit mobile number." });
+        }
+
+        // Generate 6-digit OTP
+        var otp = Random.Shared.Next(100000, 999999).ToString();
+        var expiresAt = DateTime.UtcNow.AddMinutes(10);
+        OtpCache[digitsOnly] = (otp, expiresAt);
+
+        // Check if user already exists
+        var existingUser = await _userRepository.GetByPhoneAsync(digitsOnly);
+        var isNewUser = existingUser == null;
+
+        // In development / demo environment, return OTP in response so users can sign in immediately
+        // In production, plug Fast2SMS / Twilio / MSG91 API here
+        return Ok(new
+        {
+            message = $"OTP sent successfully to +91 {digitsOnly}.",
+            phoneNumber = digitsOnly,
+            isNewUser,
+            devOtp = otp // Dev verification pass
+        });
+    }
+
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.PhoneNumber) || string.IsNullOrWhiteSpace(request.OtpCode))
+        {
+            return BadRequest(new { message = "Phone number and OTP code are required." });
+        }
+
+        var digitsOnly = new string(request.PhoneNumber.Where(char.IsDigit).ToArray());
+        if (digitsOnly.Length > 10 && digitsOnly.StartsWith("91"))
+        {
+            digitsOnly = digitsOnly.Substring(2);
+        }
+
+        if (!OtpCache.TryGetValue(digitsOnly, out var cachedOtp) || cachedOtp.ExpiresAt < DateTime.UtcNow)
+        {
+            return BadRequest(new { message = "Invalid or expired OTP. Please request a new code." });
+        }
+
+        if (cachedOtp.Code != request.OtpCode.Trim())
+        {
+            return BadRequest(new { message = "Incorrect OTP code. Please check and try again." });
+        }
+
+        // OTP verified successfully; consume it
+        OtpCache.TryRemove(digitsOnly, out _);
+
+        // Find or create user
+        var user = await _userRepository.GetByPhoneAsync(digitsOnly);
+        if (user == null)
+        {
+            // Register new ant member with real initial empty state
+            var cleanName = (request.AntName ?? "Ant Member").Trim();
+            var safePrefix = new string(cleanName.ToUpper().Where(char.IsLetter).Take(4).ToArray());
+            if (string.IsNullOrEmpty(safePrefix)) safePrefix = "ANT";
+            var refCode = $"AFF-{safePrefix}{Random.Shared.Next(100, 999)}";
+
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                PhoneNumber = digitsOnly,
+                Email = $"{digitsOnly}@affinovas.online",
+                PasswordHash = _passwordHasher.HashPassword(Guid.NewGuid().ToString("N")),
+                FirstName = cleanName,
+                LastName = string.Empty,
+                Role = UserRole.Member,
+                IsActive = true,
+                ReferralCode = refCode,
+                ReferredBy = string.IsNullOrWhiteSpace(request.ReferralCode) ? null : request.ReferralCode.Trim().ToUpper(),
+                GrainsBalance = 0, // Real authentic 0 initial balance
+                CashbackBalance = 0m,
+                DirectAntsCount = 0,
+                ActiveBranchDepth = 1,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            await _userRepository.CreateAsync(user);
+        }
+
+        if (!user.IsActive)
+        {
+            return BadRequest(new { message = "Your colony account is currently suspended. Contact support." });
+        }
+
+        var token = GenerateJwtToken(user);
+        return Ok(new
+        {
+            token,
+            user = new
+            {
+                user.Id,
+                user.Email,
+                user.PhoneNumber,
+                Name = $"{user.FirstName} {user.LastName}".Trim(),
+                Role = user.Role.ToString().ToLower(),
+                user.ReferralCode,
+                user.GrainsBalance,
+                user.CashbackBalance,
+                user.UpiId,
+                user.DirectAntsCount,
+                user.ActiveBranchDepth
+            }
+        });
+    }
+
     [HttpGet("users")]
-    public static List<User> GetInternalUsers() => _users;
+    public async Task<IActionResult> GetInternalUsers()
+    {
+        var users = await _userRepository.GetAllAsync();
+        return Ok(users.Select(u => new
+        {
+            u.Id,
+            u.Email,
+            Name = $"{u.FirstName} {u.LastName}".Trim(),
+            Role = u.Role.ToString().ToLower(),
+            u.ReferralCode,
+            u.GrainsBalance,
+            u.CashbackBalance,
+            u.UpiId,
+            u.DirectAntsCount,
+            u.ActiveBranchDepth,
+            u.IsActive,
+            u.CreatedAtUtc
+        }));
+    }
 
     private string GenerateJwtToken(User user)
     {
@@ -172,3 +313,6 @@ public class AuthController : ControllerBase
 
 public record LoginDto(string Email, string Password);
 public record RegisterDto(string Email, string Password, string FirstName, string? LastName, string? ReferralCode, string? UpiId);
+public record SendOtpDto(string PhoneNumber);
+public record VerifyOtpDto(string PhoneNumber, string OtpCode, string? AntName, string? ReferralCode);
+

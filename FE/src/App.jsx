@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import ColonyTreeVisualizer from './components/ColonyTreeVisualizer'
 import ColonyShareCard from './components/ColonyShareCard'
-import DailySpinWheel from './components/DailySpinWheel'
+import AuthLandingPage from './components/AuthLandingPage'
 import AuthModal from './components/AuthModal'
 import AdminDashboard from './components/AdminDashboard'
 import PromptModal from './components/PromptModal'
@@ -10,7 +10,7 @@ import { apiService } from './services/apiService'
 import './App.css'
 
 export default function App() {
-  // Navigation: 'home' | 'colony' | 'cashback' | 'services' | 'vault' | 'admin'
+  // Navigation: 'home' | 'colony' | 'cashback' | 'vault' | 'admin'
   const [activeTab, setActiveTab] = useState('home')
   const [lang, setLang] = useState('ta') // 'ta' or 'en' for colony
   const [promptConfig, setPromptConfig] = useState(null)
@@ -18,25 +18,15 @@ export default function App() {
   // Auth state & User Session
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login') // 'login' | 'register'
-  const [currentUser, setCurrentUser] = useState(() => apiService.getCurrentUser() || {
-    id: '22222222-2222-2222-2222-222222222222',
-    name: 'Ramu AntLeader',
-    email: 'ramu@affinovas.com',
-    role: 'member',
-    referralCode: 'AFF-RAMU',
-    grainsBalance: 1840,
-    cashbackBalance: 450.0,
-    upiId: 'ramu@okhdfcbank'
-  })
+  const [currentUser, setCurrentUser] = useState(() => apiService.getCurrentUser())
 
-  // Ants & Grains state
-  const [userGrains, setUserGrains] = useState(1840)
-  const [cashbackBalance, setCashbackBalance] = useState(450)
+  // Ants & Grains state (production clean defaults)
+  const [userGrains, setUserGrains] = useState(() => apiService.getCurrentUser()?.grainsBalance ?? 0)
+  const [cashbackBalance, setCashbackBalance] = useState(() => apiService.getCurrentUser()?.cashbackBalance ?? 0)
   const [colonySubTab, setColonySubTab] = useState('tree') // 'tree' | 'explorer'
-  const [directInvites, setDirectInvites] = useState(5)
-  const [levelDepth, setLevelDepth] = useState(3)
-  const [selectedBranch, setSelectedBranch] = useState('somu')
-  const [antName, setAntName] = useState('Ant_Ramu')
+  const [directInvites, setDirectInvites] = useState(() => Math.max(1, apiService.getCurrentUser()?.directAntsCount || 1))
+  const [levelDepth, setLevelDepth] = useState(1)
+  const [antName, setAntName] = useState(() => apiService.getCurrentUser()?.name || 'Ant_Member')
   const [copied, setCopied] = useState(false)
 
   // Dynamic Colony Economics & Merchant Configuration State (Connected to Admin Desk)
@@ -51,18 +41,12 @@ export default function App() {
   })
   const [merchantsList, setMerchantsList] = useState([])
 
-  // Passbook Dynamic Transactions State
-  const [passbookList, setPassbookList] = useState([
-    { id: 'tx-1', date: '22 Oct, 05:40 AM', desc: 'Daily Grain Harvest Spin Prize', cat: 'Spin Wheel', amount: '+50 Grains 🌾', isGrains: true, status: 'Settled' },
-    { id: 'tx-2', date: '21 Oct, 08:15 PM', desc: 'Direct Referral Bonus: Mani joined', cat: 'Colony Direct', amount: '+20 Grains 🌾', isGrains: true, status: 'Settled' },
-    { id: 'tx-3', date: '20 Oct, 02:30 PM', desc: 'Flipkart Partner Shopping Cashback', cat: 'Cashback', amount: '+₹120.00', isGrains: false, status: 'Confirmed' },
-    { id: 'tx-4', date: '18 Oct, 11:20 AM', desc: "Level 1 Bonus: Somu's 5 Ants Completed", cat: 'Branch Bonus', amount: '+100 Grains 🌾', isGrains: true, status: 'Settled' },
-    { id: 'tx-5', date: '14 Oct, 09:00 AM', desc: 'Colony Mound Activation Entry Fee', cat: 'Entry Fee', amount: '-123 Grains 🌾', isGrains: true, isNegative: true, status: 'Active' }
-  ])
+  // Passbook Dynamic Transactions State (Authentic empty list for real users)
+  const [passbookList, setPassbookList] = useState([])
 
-  // Cashback state & Dynamic Calculations
-  const [monthlySpend, setMonthlySpend] = useState(12000)
-  const [avgCashbackRate, setAvgCashbackRate] = useState(8)
+  // Cashback state & Dynamic Calculations (Realistic starting point)
+  const [monthlySpend, setMonthlySpend] = useState(2500)
+  const [avgCashbackRate, setAvgCashbackRate] = useState(5)
   const [convertedGrains, setConvertedGrains] = useState(0)
 
   const monthlyCashbackINR = Math.round((monthlySpend * avgCashbackRate) / 100)
@@ -94,7 +78,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search)
     const tabParam = params.get('tab')
     const refParam = params.get('ref')
-    if (tabParam && ['home', 'colony', 'cashback', 'services', 'vault'].includes(tabParam)) {
+    if (tabParam && ['home', 'colony', 'cashback', 'vault'].includes(tabParam)) {
       setActiveTab(tabParam)
     } else if (refParam) {
       setActiveTab('colony')
@@ -123,30 +107,6 @@ export default function App() {
     .reduce((sum, item) => sum + item.bonus, 0)
   const totalLevelGrains = levelBonusPerBranch * directInvites
   const totalHarvestGrains = directGrains + totalLevelGrains
-
-  const branches = {
-    somu: {
-      name: 'Somu',
-      status: 'Level 3 Active',
-      activeLevel: 3,
-      currentAnts: 155,
-      earned: directBonus + 100 + 200 + 300,
-    },
-    mani: {
-      name: 'Mani',
-      status: 'Level 1 Active',
-      activeLevel: 1,
-      currentAnts: 5,
-      earned: directBonus + 100,
-    },
-    kavi: {
-      name: 'Kavi (New Invite)',
-      status: 'Level 0 (Fresh Branch)',
-      activeLevel: 0,
-      currentAnts: 0,
-      earned: directBonus,
-    },
-  }
 
   const handleCopyLink = () => {
     const link = `https://affinovas.online?tab=colony&ref=${encodeURIComponent(antName || 'AntMember')}`
@@ -218,52 +178,30 @@ export default function App() {
     })
   }
 
+  // If user is not authenticated, render the dedicated Intro / Login / Signup Gateway Page
+  if (!currentUser) {
+    return (
+      <div className="affinovas-app">
+        <AuthLandingPage
+          onLoginSuccess={(u) => {
+            setCurrentUser(u)
+            setUserGrains(u.grainsBalance ?? 0)
+            setCashbackBalance(u.cashbackBalance ?? 0)
+            setDirectInvites(u.directAntsCount ?? 0)
+            setLevelDepth(u.activeBranchDepth ?? 1)
+            if (u.name) setAntName(u.name)
+            setActiveTab(u.role === 'admin' ? 'admin' : 'colony')
+            toast.success(`Welcome back, ${u.name || 'Ant Member'}!`, 'Access Granted')
+          }}
+          colonyConfig={colonyConfig}
+        />
+        <ToastContainer />
+      </div>
+    )
+  }
+
   return (
     <div className="affinovas-app">
-      {/* Multi-Portal Experience Switcher Ribbon */}
-      <div className="role-switch-ribbon">
-        <div className="role-switch-content">
-          <span>🌐 Affinovas Multi-Portal System (Admin Side & User Side):</span>
-          <div className="role-switch-buttons">
-            <button
-              className={`role-pill ${currentUser?.role !== 'admin' && activeTab !== 'admin' ? 'active-member' : ''}`}
-              onClick={() => {
-                setActiveTab('home')
-                setCurrentUser({
-                  id: '22222222-2222-2222-2222-222222222222',
-                  name: 'Ramu AntLeader',
-                  email: 'ramu@affinovas.com',
-                  role: 'member',
-                  referralCode: 'AFF-RAMU',
-                  grainsBalance: 1840,
-                  cashbackBalance: 450.0,
-                  upiId: 'ramu@okhdfcbank'
-                })
-                apiService.login('ramu@affinovas.com', 'ramu123').catch(() => {})
-              }}
-            >
-              🐜 Member Portal (User Side: Ramu)
-            </button>
-            <button
-              className={`role-pill ${currentUser?.role === 'admin' || activeTab === 'admin' ? 'active-admin' : ''}`}
-              onClick={() => {
-                setActiveTab('admin')
-                setCurrentUser({
-                  id: '11111111-1111-1111-1111-111111111111',
-                  name: 'Affinovas Admin',
-                  email: 'admin@affinovas.com',
-                  role: 'admin',
-                  referralCode: 'AFF-ADMIN'
-                })
-                apiService.login('admin@affinovas.com', 'admin123').catch(() => {})
-              }}
-            >
-              👑 Operator Deck (Admin Side)
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Master Top Navigation Bar */}
       <header className="master-nav">
         <div className="brand-section" onClick={() => setActiveTab('home')}>
@@ -276,7 +214,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Ecosystem Module Switcher */}
+        {/* Ecosystem Module Switcher (Role-aware & Login Protected) */}
         <nav className="module-switcher">
           <button
             className={`module-tab-btn ${activeTab === 'home' ? 'active' : ''}`}
@@ -284,79 +222,98 @@ export default function App() {
           >
             🏠 Hub
           </button>
+          
+          {/* Member Tabs (Colony, Cashback, Services, Vault) */}
           <button
             className={`module-tab-btn ${activeTab === 'colony' ? 'active' : ''}`}
-            onClick={() => setActiveTab('colony')}
+            onClick={() => {
+              if (currentUser) {
+                setActiveTab('colony')
+              } else {
+                toast.warning('Please sign in to access Ants & Grains Colony.', 'Sign In Required')
+                setAuthMode('login')
+                setAuthModalOpen(true)
+              }
+            }}
           >
             🐜 Ants & Grains
           </button>
           <button
             className={`module-tab-btn ${activeTab === 'cashback' ? 'active' : ''}`}
-            onClick={() => setActiveTab('cashback')}
+            onClick={() => {
+              if (currentUser) {
+                setActiveTab('cashback')
+              } else {
+                toast.warning('Please sign in to access Cashback & Deals.', 'Sign In Required')
+                setAuthMode('login')
+                setAuthModalOpen(true)
+              }
+            }}
           >
             💸 Cashback & Deals
           </button>
           <button
-            className={`module-tab-btn ${activeTab === 'services' ? 'active' : ''}`}
-            onClick={() => setActiveTab('services')}
-          >
-            ⚡ Digital Solutions
-          </button>
-          <button
             className={`module-tab-btn ${activeTab === 'vault' ? 'active' : ''}`}
-            onClick={() => setActiveTab('vault')}
-          >
-            💼 Vault
-          </button>
-
-          {/* Operator Desk Tab */}
-          <button
-            className={`module-tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
-            style={{
-              color: activeTab === 'admin' ? 'var(--emerald-deep)' : '#047857',
-              fontWeight: 900,
-              border: '1px solid rgba(4, 120, 87, 0.3)',
-              background: activeTab === 'admin' ? '#ffffff' : '#f0fdf4'
-            }}
             onClick={() => {
-              setActiveTab('admin')
-              if (currentUser?.role !== 'admin') {
-                setCurrentUser({
-                  id: '11111111-1111-1111-1111-111111111111',
-                  name: 'Affinovas Admin',
-                  email: 'admin@affinovas.com',
-                  role: 'admin',
-                  referralCode: 'AFF-ADMIN'
-                })
+              if (currentUser) {
+                setActiveTab('vault')
+              } else {
+                toast.warning('Please sign in to access your Vault.', 'Sign In Required')
+                setAuthMode('login')
+                setAuthModalOpen(true)
               }
             }}
           >
-            🛡️ Admin Desk
+            💼 Vault
           </button>
         </nav>
 
-        {/* Quick User / Wallet Indicator & Auth */}
+        {/* User Actions */}
         <div className="nav-right-actions">
-          <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')}>
-            <span>🌾 {userGrains.toLocaleString()} Grains</span>
-            <span style={{ opacity: 0.6 }}>|</span>
-            <span style={{ color: 'var(--emerald-primary)', fontWeight: 800 }}>₹{cashbackBalance}</span>
-          </div>
-
           {currentUser ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div className="wallet-quick-badge" style={{ borderColor: 'var(--champagne-gold)', color: 'var(--text-dark)' }}>
-                <span>{currentUser.role === 'admin' ? '👑 Admin' : `🐜 ${currentUser.name}`}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              {currentUser.role !== 'admin' && (
+                <div className="wallet-quick-badge" onClick={() => setActiveTab('vault')} title="View Vault">
+                  <span>🌾 {userGrains.toLocaleString()}</span>
+                  <span style={{ opacity: 0.5 }}>|</span>
+                  <span style={{ color: 'var(--emerald-primary)', fontWeight: 800 }}>₹{cashbackBalance}</span>
+                </div>
+              )}
+              <div
+                className="wallet-quick-badge"
+                onClick={() => {
+                  if (currentUser.role === 'admin') {
+                    setActiveTab(activeTab === 'admin' ? 'home' : 'admin')
+                  }
+                }}
+                title={currentUser.role === 'admin' ? 'Toggle Admin Command Deck' : 'Member Account'}
+                style={{
+                  background: currentUser.role === 'admin' ? (activeTab === 'admin' ? '#10b981' : '#ecfdf5') : '#fffbeb',
+                  borderColor: currentUser.role === 'admin' ? '#10b981' : '#f59e0b',
+                  color: currentUser.role === 'admin' ? (activeTab === 'admin' ? '#ffffff' : '#064e3b') : '#92400e',
+                  fontWeight: 800,
+                  cursor: currentUser.role === 'admin' ? 'pointer' : 'default',
+                  boxShadow: activeTab === 'admin' ? '0 2px 10px rgba(16, 185, 129, 0.4)' : 'none'
+                }}
+              >
+                <span>{currentUser.role === 'admin' ? '👑 Admin' : `🐜 ${currentUser.name?.split(' ')[0] || 'Ant'}`}</span>
               </div>
               <button
-                className="mini-lang-btn"
-                style={{ padding: '0.4rem 0.7rem' }}
+                className="nav-logout-btn"
+                title="Logout"
                 onClick={() => {
                   apiService.logout()
                   setCurrentUser(null)
+                  setUserGrains(0)
+                  setCashbackBalance(0)
+                  setDirectInvites(0)
+                  setLevelDepth(1)
+                  setAntName('Ant_Member')
+                  setActiveTab('home')
+                  toast.info('You have safely signed out of your account.', 'Signed Out')
                 }}
               >
-                Logout
+                🚪 Logout
               </button>
             </div>
           ) : (
@@ -404,15 +361,22 @@ export default function App() {
               <div
                 className="pillar-card"
                 style={{ '--card-accent': '#f59e0b' }}
-                onClick={() => setActiveTab('colony')}
+                onClick={() => {
+                  if (currentUser) {
+                    setActiveTab('colony')
+                  } else {
+                    toast.warning('Please sign in to access Ants & Grains Colony.', 'Sign In Required')
+                    setAuthMode('login')
+                    setAuthModalOpen(true)
+                  }
+                }}
               >
                 <div>
                   <div className="pillar-icon-box">🐜</div>
                   <span className="pillar-badge">Colony Network</span>
                   <h3 className="pillar-title">Ants & Grains Colony</h3>
                   <p className="pillar-desc">
-                    Our flagship referral ecosystem. Invite fellow ants, gather grains, and build
-                    isolated 10-level branch trees multiplying at 5× speed.
+                    Our flagship referral ecosystem. Invite fellow ants, gather grains, and build isolated 10-level branch trees multiplying at 5× speed.
                   </p>
                 </div>
                 <div className="pillar-action-row">
@@ -425,7 +389,15 @@ export default function App() {
               <div
                 className="pillar-card"
                 style={{ '--card-accent': '#10b981' }}
-                onClick={() => setActiveTab('cashback')}
+                onClick={() => {
+                  if (currentUser) {
+                    setActiveTab('cashback')
+                  } else {
+                    toast.warning('Please sign in to access Cashback & Deals.', 'Sign In Required')
+                    setAuthMode('login')
+                    setAuthModalOpen(true)
+                  }
+                }}
               >
                 <div>
                   <div className="pillar-icon-box">💸</div>
@@ -434,8 +406,7 @@ export default function App() {
                   </span>
                   <h3 className="pillar-title">Cashback & Smart Deals</h3>
                   <p className="pillar-desc">
-                    Earn up to 25% instant cashback on partner shopping, travel, and recharges. Convert
-                    cashback directly into colony grains or withdraw.
+                    Earn up to 25% instant cashback on partner shopping, travel, and recharges. Convert cashback directly into colony grains or withdraw.
                   </p>
                 </div>
                 <div className="pillar-action-row">
@@ -444,34 +415,20 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Pillar 3: Digital Solutions */}
-              <div
-                className="pillar-card"
-                style={{ '--card-accent': '#06b6d4' }}
-                onClick={() => setActiveTab('services')}
-              >
-                <div>
-                  <div className="pillar-icon-box">⚡</div>
-                  <span className="pillar-badge" style={{ color: '#0369a1', background: '#f0f9ff', borderColor: '#38bdf8' }}>
-                    Enterprise Tech
-                  </span>
-                  <h3 className="pillar-title">Digital & Cloud Engineering</h3>
-                  <p className="pillar-desc">
-                    High-throughput backends built on .NET Clean Architecture, fast-refresh SPA clients,
-                    and intelligent automation platforms.
-                  </p>
-                </div>
-                <div className="pillar-action-row">
-                  <span className="pillar-highlight" style={{ color: '#0369a1' }}>.NET & Cloud Ready</span>
-                  <span className="pillar-btn">View Services →</span>
-                </div>
-              </div>
 
               {/* Pillar 4: Unified Vault */}
               <div
                 className="pillar-card"
                 style={{ '--card-accent': '#8b5cf6' }}
-                onClick={() => setActiveTab('vault')}
+                onClick={() => {
+                  if (currentUser) {
+                    setActiveTab('vault')
+                  } else {
+                    toast.warning('Please sign in to access your Vault.', 'Sign In Required')
+                    setAuthMode('login')
+                    setAuthModalOpen(true)
+                  }
+                }}
               >
                 <div>
                   <div className="pillar-icon-box">💼</div>
@@ -491,23 +448,23 @@ export default function App() {
               </div>
             </div>
 
-            {/* Ecosystem Stats Strip */}
+            {/* Ecosystem Verified Parameters Strip (Sponsor & Investor Credibility) */}
             <div className="ecosystem-stats-strip">
               <div className="stat-item">
-                <h3>18,400+</h3>
-                <p>Active Ants in Colony</p>
+                <h3>{maxLevels} Levels</h3>
+                <p>Isolated Branch Chart Depth</p>
               </div>
               <div className="stat-item">
-                <h3>₹2.4M+</h3>
-                <p>Cashback Distributed</p>
+                <h3>{multiplier}× Multiplier</h3>
+                <p>Level Progression Formula</p>
               </div>
               <div className="stat-item">
-                <h3>5.2M+</h3>
-                <p>Grains Harvested</p>
+                <h3>+{directBonus} Grains</h3>
+                <p>Instant Direct Referral Bonus</p>
               </div>
               <div className="stat-item">
-                <h3>99.98%</h3>
-                <p>Platform Uptime</p>
+                <h3>Zero Fee</h3>
+                <p>Internal UPI Clearance Payouts</p>
               </div>
             </div>
           </section>
@@ -658,12 +615,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Feature 3: Daily Grain Spin Wheel & Ant Ranks */}
-            <DailySpinWheel
-              lang={lang}
-              onGrainsWon={(won) => setUserGrains((prev) => prev + won)}
-            />
-
             {/* Feature 1: Hierarchy View Switcher */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', marginBottom: '1.75rem' }}>
               <button
@@ -684,57 +635,38 @@ export default function App() {
 
             {/* Tree View (Feature 1) */}
             {colonySubTab === 'tree' && (
-              <ColonyTreeVisualizer lang={lang} />
+              <ColonyTreeVisualizer lang={lang} currentUser={currentUser} />
             )}
 
-            {/* Visual Branch Explorer Demo */}
+            {/* Production Branch Explorer */}
             {colonySubTab === 'explorer' && (
               <div className="branch-explorer">
                 <div className="explorer-header">
-                  <h2>{lang === 'ta' ? '🐜 தனியான பிராஞ்ச் இயக்கம் (Ramu - Somu & Mani Example)' : '🐜 Independent Branch Isolation Explorer'}</h2>
+                  <h2>{lang === 'ta' ? '🐜 தனித்தனி 10-நிலை பிராஞ்ச் கட்டமைப்பு' : '🐜 Independent 10-Level Branch Architecture'}</h2>
                   <p>
                     {lang === 'ta'
-                      ? 'Ramu invite panna Somu matrum Mani-ku thanithani 10-level charts eppadi work aagudhu endru paarunga:'
-                      : 'See how Ramu’s direct invites (Somu and Mani) run independent 10-level charts simultaneously:'}
+                      ? 'நீங்கள் சேர்க்கும் ஒவ்வொரு புதிய உறுப்பினரும் தங்களுக்கென தனி 10-நிலை அட்டவணையை கொண்டுள்ளனர். மற்ற பிராஞ்சுகளின் தாக்கம் எதுவும் இல்லாமல் ஒவ்வொன்றும் தனித்து இயங்கும்.'
+                      : 'Every direct ant you invite initiates an isolated, independent 10-level chart. No branch interferes with or limits another branch.'}
                   </p>
-                </div>
-
-                <div className="branch-tabs">
-                  <button
-                    className={`branch-tab-btn ${selectedBranch === 'somu' ? 'active' : ''}`}
-                    onClick={() => setSelectedBranch('somu')}
-                  >
-                    🌿 Somu’s Branch (Level 3)
-                  </button>
-                  <button
-                    className={`branch-tab-btn ${selectedBranch === 'mani' ? 'active' : ''}`}
-                    onClick={() => setSelectedBranch('mani')}
-                  >
-                    🌿 Mani’s Branch (Level 1)
-                  </button>
-                  <button
-                    className={`branch-tab-btn ${selectedBranch === 'kavi' ? 'active' : ''}`}
-                    onClick={() => setSelectedBranch('kavi')}
-                  >
-                    🌱 Kavi’s Branch (Fresh)
-                  </button>
                 </div>
 
                 <div className="branch-card-preview">
                   <div className="branch-meta-row">
                     <div className="branch-name">
-                      <span>🐜 {branches[selectedBranch].name}</span>
-                      <span className="branch-status-badge">{branches[selectedBranch].status}</span>
+                      <span>🐜 {currentUser?.name || 'Member'}'s Direct Branch Network</span>
+                      <span className="branch-status-badge">
+                        {directInvites > 0 ? `${directInvites} Active ${directInvites === 1 ? 'Branch' : 'Branches'}` : 'Starting Network'}
+                      </span>
                     </div>
                     <div style={{ color: 'var(--champagne-gold)', fontWeight: 800 }}>
-                      {lang === 'ta' ? 'Earned from this branch:' : 'Harvested:'} {branches[selectedBranch].earned} Grains 🌾
+                      {lang === 'ta' ? 'மொத்த பரிந்துரை போனஸ்:' : 'Referral Reward Yield:'} {directGrains} Grains 🌾
                     </div>
                   </div>
 
                   <div className="branch-levels-view">
                     {levelTable.map((lvl) => {
-                      const isUnlocked = lvl.level <= branches[selectedBranch].activeLevel
-                      const isCurrent = lvl.level === branches[selectedBranch].activeLevel
+                      const isUnlocked = lvl.level <= levelDepth
+                      const isCurrent = lvl.level === levelDepth
                       return (
                         <div
                           key={lvl.level}
@@ -750,8 +682,8 @@ export default function App() {
 
                   <p style={{ marginTop: '1.25rem', fontSize: '0.88rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
                     {lang === 'ta'
-                      ? '🔒 Somu-oda branch Level 10 complete aanaal andha branch close aagum. Aana Mani-oda branch thodarndhu active-aa irukkum!'
-                      : '🔒 When Somu’s branch reaches Level 10, only Somu’s chart closes. Mani’s branch continues operating independently!'}
+                      ? '🔒 ஏதேனும் ஒரு பிராஞ்ச் லெவல் 10-ஐ நிறைவு செய்தால், அந்த குறிப்பிட்ட பிராஞ்ச் மட்டுமே முடிவடையும். மற்ற அனைத்து பிராஞ்சுகளும் தடையின்றி தொடர்ந்து பலன் தரும்!'
+                      : '🔒 When any individual branch completes Level 10, only that single chart closes. All other branches continue operating completely independently!'}
                   </p>
                 </div>
               </div>
@@ -1021,77 +953,7 @@ export default function App() {
         )}
 
         {/* ======================================================== */}
-        {/* TAB 4: DIGITAL & CLOUD SOLUTIONS                         */}
-        {/* ======================================================== */}
-        {activeTab === 'services' && (
-          <section className="services-section">
-            <div className="module-breadcrumb-bar">
-              <button className="breadcrumb-back-btn" onClick={() => setActiveTab('home')}>
-                ← Back to Affinovas Hub
-              </button>
-              <span style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 800 }}>
-                Enterprise Grade Solutions
-              </span>
-            </div>
-
-            <div className="portal-hero">
-              <div className="portal-pill" style={{ borderColor: 'rgba(2, 132, 199, 0.4)', color: '#0369a1' }}>
-                <span>⚡ AFFINOVAS DIGITAL ENGINEERING</span>
-              </div>
-              <h1 className="hero-heading">
-                Scalable Cloud Architectures. <br />
-                <span className="gold-text" style={{ background: 'linear-gradient(135deg, var(--emerald-deep) 0%, #0284c7 50%, var(--champagne-gold) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Built for High Performance.
-                </span>
-              </h1>
-              <p className="hero-description">
-                The technical engine powering the entire Affinovas ecosystem. Clean architecture backends,
-                ultra-fast distributed frontend applications, and custom digital transformation.
-              </p>
-            </div>
-
-            <div className="services-grid">
-              <div className="service-card">
-                <div className="service-icon">🏗️</div>
-                <h3 className="service-title">.NET Clean Architecture Backend</h3>
-                <p className="service-desc">
-                  Separated Domain, Application, Infrastructure, and API layers with high-performance
-                  SQL connections, JWT token authorization, and microservice capabilities.
-                </p>
-              </div>
-
-              <div className="service-card">
-                <div className="service-icon">🌐</div>
-                <h3 className="service-title">Edge Web Applications</h3>
-                <p className="service-desc">
-                  Decoupled React and modern Single Page Applications (SPA) distributed across global
-                  edge networks with sub-millisecond static asset delivery and instant reload.
-                </p>
-              </div>
-
-              <div className="service-card">
-                <div className="service-icon">🔒</div>
-                <h3 className="service-title">Cryptographic Security & Ledgers</h3>
-                <p className="service-desc">
-                  Tamper-resistant audit trails, granular user role permissions, zero-trust API policies,
-                  and automated multi-tier transaction ledgers.
-                </p>
-              </div>
-
-              <div className="service-card">
-                <div className="service-icon">📊</div>
-                <h3 className="service-title">Data Analytics & Pipeline Engine</h3>
-                <p className="service-desc">
-                  Real-time branch calculation algorithms, automatic level progression evaluation,
-                  and scalable analytics dashboards for enterprise operators.
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ======================================================== */}
-        {/* TAB 5: UNIFIED MEMBER VAULT                              */}
+        {/* TAB 4: UNIFIED MEMBER VAULT                              */}
         {/* ======================================================== */}
         {activeTab === 'vault' && (
           <section className="vault-section">
@@ -1125,10 +987,10 @@ export default function App() {
                 <div className="vault-bal-card">
                   <div className="vault-bal-title">Colony Grains Balance</div>
                   <div className="vault-bal-amount" style={{ color: 'var(--champagne-gold)', fontWeight: 900 }}>
-                    1,840 🌾
+                    {userGrains.toLocaleString()} 🌾
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                    ≈ ₹1,840 value in colony
+                    ≈ ₹{(userGrains * (colonyConfig?.grainToInrRatio || 1.0)).toLocaleString()} value in colony
                   </p>
                 </div>
 
@@ -1145,10 +1007,10 @@ export default function App() {
                 <div className="vault-bal-card">
                   <div className="vault-bal-title">Active Referral Branches</div>
                   <div className="vault-bal-amount" style={{ color: '#0369a1', fontWeight: 900 }}>
-                    3 Branches
+                    {directInvites} {directInvites === 1 ? 'Branch' : 'Branches'}
                   </div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                    160 total ants in network
+                    {directInvites === 0 ? 'Share your referral code to open branches' : `${directInvites} active downlines`}
                   </p>
                 </div>
               </div>
@@ -1222,40 +1084,52 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {passbookList.map((tx) => (
-                        <tr key={tx.id}>
-                          <td style={{ color: 'var(--text-muted)' }}>{tx.date}</td>
-                          <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{tx.desc}</td>
-                          <td>
-                            <span
-                              className="growth-badge"
-                              style={{
-                                color: tx.cat === 'Withdrawal' ? '#b45309' : tx.cat === 'Cashback' ? '#0369a1' : 'var(--emerald-deep)',
-                                background: tx.cat === 'Withdrawal' ? '#fef3c7' : tx.cat === 'Cashback' ? '#f0f9ff' : '#ecfdf5',
-                                borderColor: tx.cat === 'Withdrawal' ? '#fde68a' : tx.cat === 'Cashback' ? 'rgba(3,105,161,0.3)' : 'rgba(16, 185, 129, 0.35)'
-                              }}
-                            >
-                              {tx.cat}
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                              fontWeight: 800,
-                              color: tx.isNegative ? '#b91c1c' : tx.isGrains ? 'var(--champagne-gold)' : 'var(--emerald-deep)'
-                            }}
-                          >
-                            {tx.amount}
-                          </td>
-                          <td
-                            style={{
-                              fontWeight: 700,
-                              color: tx.status.includes('Pending') ? '#b45309' : 'var(--emerald-deep)'
-                            }}
-                          >
-                            {tx.status}
+                      {passbookList.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📜</div>
+                            <strong style={{ display: 'block', color: 'var(--text-dark)', marginBottom: '0.25rem' }}>
+                              No transactions recorded yet
+                            </strong>
+                            <span>Your real-time grain harvests, direct referral bonuses, and cashback withdrawals will be logged here.</span>
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        passbookList.map((tx) => (
+                          <tr key={tx.id}>
+                            <td style={{ color: 'var(--text-muted)' }}>{tx.date}</td>
+                            <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{tx.desc}</td>
+                            <td>
+                              <span
+                                className="growth-badge"
+                                style={{
+                                  color: tx.cat === 'Withdrawal' ? '#b45309' : tx.cat === 'Cashback' ? '#0369a1' : 'var(--emerald-deep)',
+                                  background: tx.cat === 'Withdrawal' ? '#fef3c7' : tx.cat === 'Cashback' ? '#f0f9ff' : '#ecfdf5',
+                                  borderColor: tx.cat === 'Withdrawal' ? '#fde68a' : tx.cat === 'Cashback' ? 'rgba(3,105,161,0.3)' : 'rgba(16, 185, 129, 0.35)'
+                                }}
+                              >
+                                {tx.cat}
+                              </span>
+                            </td>
+                            <td
+                              style={{
+                                fontWeight: 800,
+                                color: tx.isNegative ? '#b91c1c' : tx.isGrains ? 'var(--champagne-gold)' : 'var(--emerald-deep)'
+                              }}
+                            >
+                              {tx.amount}
+                            </td>
+                            <td
+                              style={{
+                                fontWeight: 700,
+                                color: tx.status.includes('Pending') ? '#b45309' : 'var(--emerald-deep)'
+                              }}
+                            >
+                              {tx.status}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1294,9 +1168,15 @@ export default function App() {
         initialMode={authMode}
         onLoginSuccess={(u) => {
           setCurrentUser(u)
-          setUserGrains(u.grainsBalance || 1840)
+          setUserGrains(u.grainsBalance ?? 0)
+          setCashbackBalance(u.cashbackBalance ?? 0)
+          setDirectInvites(u.directAntsCount ?? 0)
+          setLevelDepth(u.activeBranchDepth ?? 1)
+          if (u.name) setAntName(u.name)
+          toast.success(`Welcome, ${u.name || 'Ant Member'}!`, 'Signed In')
         }}
         lang={lang}
+        onLangChange={(l) => setLang(l)}
         colonyConfig={colonyConfig}
       />
 

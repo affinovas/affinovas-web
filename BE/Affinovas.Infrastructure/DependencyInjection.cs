@@ -14,7 +14,9 @@ public static class DependencyInjection
     {
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
-        services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
+        services.AddSingleton<ISqlConnectionFactory, SqliteConnectionFactory>();
+        services.AddSingleton<SqliteDbInitializer>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
