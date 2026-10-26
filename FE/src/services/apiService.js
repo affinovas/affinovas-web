@@ -5,6 +5,34 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5267/api'
 
+// Safely determine if a remote backend is reachable from this client
+// Prevents Safari/iOS mixed-content "Load failed" when production HTTPS tries to contact http://localhost
+function canReachBackend() {
+  if (!API_BASE) return false
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    if (API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1') || API_BASE.startsWith('http://')) {
+      return false
+    }
+  }
+  return true
+}
+
+function isNetworkError(err) {
+  if (!err) return true
+  const msg = (err.message || String(err)).toLowerCase()
+  return (
+    msg.includes('load failed') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('network') ||
+    msg.includes('abort') ||
+    msg.includes('cross-origin') ||
+    msg.includes('mixed content') ||
+    msg.includes('blocked') ||
+    msg.includes('typeerror') ||
+    msg.includes('refused')
+  )
+}
+
 // Pre-seeded Demo Data for Standalone / Client Execution (Production-Ready Clean Defaults)
 const INITIAL_USERS = [
   {
@@ -97,25 +125,26 @@ if (!localStorage.getItem('affinovas_settings')) setStore('settings', INITIAL_SE
 export const apiService = {
   // Mobile OTP Authentication
   async sendOtp(phoneNumber) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber })
-      })
-      if (res.ok) {
-        return await res.json()
-      } else {
-        const err = await res.json().catch(() => ({}))
-        if (err.message && res.status < 500) {
-          throw new Error(err.message)
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/auth/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber })
+        })
+        if (res.ok) {
+          return await res.json()
+        } else {
+          const err = await res.json().catch(() => ({}))
+          if (err.message && res.status < 500) {
+            throw new Error(err.message)
+          }
+        }
+      } catch (err) {
+        if (!isNetworkError(err)) {
+          throw err
         }
       }
-    } catch (err) {
-      if (err.message && !err.message.includes('fetch') && !err.message.includes('Network') && !err.message.includes('Failed')) {
-        throw err
-      }
-      // Offline fallback when backend server is unreachable
     }
 
     const clean = phoneNumber.replace(/\D/g, '')
@@ -138,28 +167,29 @@ export const apiService = {
   },
 
   async verifyOtp({ phoneNumber, otpCode, antName, referralCode, password }) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, otpCode, antName, referralCode, password })
-      })
-      if (res.ok) {
-        const data = await res.json()
-        localStorage.setItem('affinovas_token', data.token)
-        localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
-        return data
-      } else {
-        const err = await res.json().catch(() => ({}))
-        if (err.message && res.status < 500) {
-          throw new Error(err.message)
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber, otpCode, antName, referralCode, password })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem('affinovas_token', data.token)
+          localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
+          return data
+        } else {
+          const err = await res.json().catch(() => ({}))
+          if (err.message && res.status < 500) {
+            throw new Error(err.message)
+          }
+        }
+      } catch (err) {
+        if (!isNetworkError(err)) {
+          throw err
         }
       }
-    } catch (err) {
-      if (err.message && !err.message.includes('fetch') && !err.message.includes('Network') && !err.message.includes('Failed')) {
-        throw err
-      }
-      // Offline fallback when backend server is unreachable
     }
 
     const clean = phoneNumber.replace(/\D/g, '')
@@ -227,26 +257,29 @@ export const apiService = {
 
   // Password Authentication (Supports Mobile Number, Username/Name, or Email)
   async login(identifier, password) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: identifier, password })
-      })
-      if (res.ok) {
-        const data = await res.json()
-        localStorage.setItem('affinovas_token', data.token)
-        localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
-        return data
-      } else {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.message || 'Invalid credentials or password.')
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: identifier, password })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem('affinovas_token', data.token)
+          localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
+          return data
+        } else {
+          const errData = await res.json().catch(() => ({}))
+          if (errData.message && res.status < 500) {
+            throw new Error(errData.message)
+          }
+        }
+      } catch (err) {
+        if (!isNetworkError(err)) {
+          throw err
+        }
       }
-    } catch (err) {
-      if (err.message && !err.message.includes('fetch') && !err.message.includes('Network') && !err.message.includes('Failed')) {
-        throw err
-      }
-      // Offline fallback only when backend server is unreachable
     }
 
     const cleanInput = (identifier || '').trim().toLowerCase()
@@ -292,26 +325,30 @@ export const apiService = {
   },
 
   async register({ email, password, name, referralCode, upiId }) {
-    try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, firstName: name, referralCode, upiId })
-      })
-      if (res.ok) {
-        const data = await res.json()
-        localStorage.setItem('affinovas_token', data.token)
-        localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
-        return data
-      } else {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.message || 'Registration failed.')
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, firstName: name, referralCode, upiId })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem('affinovas_token', data.token)
+          localStorage.setItem('affinovas_current_user', JSON.stringify(data.user))
+          return data
+        } else {
+          const errData = await res.json().catch(() => ({}))
+          if (errData.message && res.status < 500) {
+            throw new Error(errData.message || 'Registration failed.')
+          }
+        }
+      } catch (err) {
+        if (!isNetworkError(err)) {
+          throw err
+        }
+        // Offline fallback only when backend server is unreachable
       }
-    } catch (err) {
-      if (err.message && err.message !== 'Failed to fetch') {
-        throw err
-      }
-      // Offline fallback only when backend server is unreachable
     }
 
     const users = getStore('users', INITIAL_USERS)
@@ -367,15 +404,17 @@ export const apiService = {
 
   // Member Actions
   async requestWithdrawal({ userId, userEmail, userName, amount, upiId }) {
-    try {
-      const res = await fetch(`${API_BASE}/user/withdraw`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, email: userEmail, name: userName, amount, upiId })
-      })
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/user/withdraw`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, email: userEmail, name: userName, amount, upiId })
+        })
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const withdrawals = getStore('withdrawals', INITIAL_WITHDRAWALS)
@@ -412,11 +451,13 @@ export const apiService = {
 
   // Admin Desk APIs
   async getAdminOverview() {
-    try {
-      const res = await fetch(`${API_BASE}/admin/overview`)
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/overview`)
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const users = getStore('users', INITIAL_USERS)
@@ -443,11 +484,13 @@ export const apiService = {
   },
 
   async getAdminMembers(search = '') {
-    try {
-      const res = await fetch(`${API_BASE}/admin/members?search=${encodeURIComponent(search)}`)
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/members?search=${encodeURIComponent(search)}`)
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const users = getStore('users', INITIAL_USERS)
@@ -463,11 +506,13 @@ export const apiService = {
   },
 
   async toggleMemberStatus(userId) {
-    try {
-      const res = await fetch(`${API_BASE}/admin/members/${userId}/toggle-status`, { method: 'POST' })
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/members/${userId}/toggle-status`, { method: 'POST' })
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const users = getStore('users', INITIAL_USERS)
@@ -481,26 +526,30 @@ export const apiService = {
   },
 
   async getAdminWithdrawals() {
-    try {
-      const res = await fetch(`${API_BASE}/admin/withdrawals`)
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdrawals`)
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     return getStore('withdrawals', INITIAL_WITHDRAWALS)
   },
 
   async processWithdrawal(id, approved, utrNumber, note) {
-    try {
-      const res = await fetch(`${API_BASE}/admin/withdrawals/${id}/process`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approved, utrNumber, note })
-      })
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/withdrawals/${id}/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ approved, utrNumber, note })
+        })
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const withdrawals = getStore('withdrawals', INITIAL_WITHDRAWALS)
@@ -517,25 +566,29 @@ export const apiService = {
   },
 
   async getMerchants() {
-    try {
-      const res = await fetch(`${API_BASE}/admin/merchants`)
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/merchants`)
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
     return getStore('merchants', INITIAL_MERCHANTS)
   },
 
   async updateMerchantRate(id, newRate, isActive) {
-    try {
-      const res = await fetch(`${API_BASE}/admin/merchants/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cashbackRate: newRate, isActive })
-      })
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/merchants/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cashbackRate: newRate, isActive })
+        })
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const merchants = getStore('merchants', INITIAL_MERCHANTS)
@@ -550,15 +603,17 @@ export const apiService = {
   },
 
   async addMerchant({ name, category, cashbackRate, logo, redirectUrl }) {
-    try {
-      const res = await fetch(`${API_BASE}/admin/merchants`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, category, cashbackRate: Number(cashbackRate), logo, redirectUrl })
-      })
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/merchants`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, category, cashbackRate: Number(cashbackRate), logo, redirectUrl })
+        })
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const merchants = getStore('merchants', INITIAL_MERCHANTS)
@@ -587,25 +642,29 @@ export const apiService = {
   },
 
   async getColonySettings() {
-    try {
-      const res = await fetch(`${API_BASE}/admin/settings`)
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/settings`)
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
     return getStore('settings', INITIAL_SETTINGS)
   },
 
   async updateColonySettings(newSettings) {
-    try {
-      const res = await fetch(`${API_BASE}/admin/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSettings)
-      })
-      if (res.ok) return await res.json()
-    } catch {
-      // Fallback
+    if (canReachBackend()) {
+      try {
+        const res = await fetch(`${API_BASE}/admin/settings`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newSettings)
+        })
+        if (res.ok) return await res.json()
+      } catch {
+        // Fallback
+      }
     }
 
     const current = getStore('settings', INITIAL_SETTINGS)
