@@ -266,6 +266,17 @@ export default function App() {
           >
             💼 Vault
           </button>
+          <button
+            id="nav-tab-admin"
+            className={`module-tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
+            style={{
+              borderColor: activeTab === 'admin' ? 'var(--emerald-primary)' : 'rgba(16, 185, 129, 0.35)',
+              color: activeTab === 'admin' ? 'var(--emerald-deep)' : '#065f46'
+            }}
+            onClick={() => setActiveTab('admin')}
+          >
+            ⚙️ Configurations & Admin
+          </button>
         </nav>
 
         {/* User Actions */}
@@ -966,20 +977,22 @@ export default function App() {
               </span>
             </div>
 
-            <div className="portal-hero">
-              <div className="portal-pill" style={{ borderColor: 'rgba(126, 34, 206, 0.4)', color: '#7e22ce' }}>
-                <span>💼 AFFINOVAS UNIFIED VAULT</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--text-dark)', margin: 0 }}>
+                  💼 Unified Member Vault
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0.25rem 0 0' }}>
+                  Live balances, instant payouts, and active colony configurations.
+                </p>
               </div>
-              <h1 className="hero-heading">
-                One Wallet. <br />
-                <span className="gold-text" style={{ background: 'linear-gradient(135deg, var(--emerald-deep) 0%, #7e22ce 50%, var(--champagne-gold) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Total Asset Transparency.
-                </span>
-              </h1>
-              <p className="hero-description">
-                Monitor your Colony Grain harvest, cashback rewards, referral bonuses, and instant payout
-                transfers from one secure dashboard.
-              </p>
+              <button
+                className="admin-btn admin-btn-toggle"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem', fontSize: '0.85rem' }}
+                onClick={() => setActiveTab('admin')}
+              >
+                ⚙️ Configurations & Admin Desk →
+              </button>
             </div>
 
             <div className="vault-box">
@@ -1059,6 +1072,70 @@ export default function App() {
                 >
                   🐜 Open Ants & Grains Colony →
                 </button>
+              </div>
+
+              {/* Colony Economics Configuration Summary Strip */}
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '2.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.25rem' }}>⚙️</span>
+                    <div>
+                      <strong style={{ color: 'var(--text-dark)', fontSize: '1.05rem', display: 'block' }}>
+                        Colony Economics & Formula Configurations
+                      </strong>
+                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                        Active network parameters for entry fees, branch progression, and bonuses
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className="admin-btn admin-btn-toggle"
+                    style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem', fontWeight: 800 }}
+                    onClick={() => setActiveTab('admin')}
+                  >
+                    ⚙️ Manage Configurations in Admin Desk →
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.85rem' }}>
+                  <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.2rem' }}>Colony Entry Fee</div>
+                    <strong style={{ fontSize: '1.2rem', color: 'var(--text-dark)', fontWeight: 900 }}>{colonyConfig?.entryFeeGrains ?? 123} 🌾</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Per mound activation</div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.2rem' }}>Direct Sponsor Bonus</div>
+                    <strong style={{ fontSize: '1.2rem', color: 'var(--emerald-deep)', fontWeight: 900 }}>+{colonyConfig?.directBonusGrains ?? 20} 🌾</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Per invited ant</div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.2rem' }}>Level Expansion</div>
+                    <strong style={{ fontSize: '1.2rem', color: '#0369a1', fontWeight: 900 }}>{colonyConfig?.levelExpansionMultiplier ?? 5}×</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Multiplier per tier</div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.2rem' }}>Max Branch Depth</div>
+                    <strong style={{ fontSize: '1.2rem', color: '#7e22ce', fontWeight: 900 }}>{colonyConfig?.maxLevelsPerBranch ?? 10} Levels</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Branch limit</div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.2rem' }}>Cash → Grain Bonus</div>
+                    <strong style={{ fontSize: '1.2rem', color: 'var(--champagne-gold)', fontWeight: 900 }}>{colonyConfig?.cashbackToGrainMultiplier ?? 1.5}×</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Swap conversion rate</div>
+                  </div>
+
+                  <div style={{ background: '#ffffff', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.2rem' }}>Registration Gate</div>
+                    <strong style={{ fontSize: '1.2rem', color: colonyConfig?.registrationsOpen !== false ? '#047857' : '#b91c1c', fontWeight: 900 }}>
+                      {colonyConfig?.registrationsOpen !== false ? '✓ Open' : '✕ Paused'}
+                    </strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Colony signup gate</div>
+                  </div>
+                </div>
               </div>
 
               {/* Feature 4: Passbook & Audit Ledger */}

@@ -160,69 +160,22 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
         </div>
       </header>
 
-      {/* Main Split Layout */}
-      <main className="auth-landing-container">
-        {/* Left Side: Creative Real Platform Showcase */}
-        <div className="auth-intro-side">
-          <div className="auth-intro-pill">
-            <span>✨ VERIFIED MEMBERSHIP PORTAL</span>
+      {/* Centered Modern Auth Gateway (Clean, Non-Cluttered) */}
+      <main className="auth-landing-container-clean">
+        <div className="auth-header-clean">
+          <div className="auth-badge-clean">
+            <span>✨ AFFINOVAS COLONY ACCESS</span>
           </div>
-
-          <h1 className="auth-hero-title">
-            Step Into the <br />
-            <span className="auth-gradient-text">Affinovas Colony.</span>
+          <h1 className="auth-title-clean">
+            Welcome to <span className="auth-gradient-text">Affinovas</span>
           </h1>
-
-          <p className="auth-hero-description">
-            Sign up or log in with your mobile number to start gathering real grains, track your independent
-            10-level branch trees, and unlock instant UPI cashback clearances.
+          <p className="auth-subtitle-clean">
+            Fast, secure access to your grains, cashback rewards, and colony network.
           </p>
-
-          {/* 3 Real Platform Pillars */}
-          <div className="auth-features-list">
-            <div className="auth-feature-card">
-              <div className="auth-feature-icon ant-icon">🐜</div>
-              <div className="auth-feature-content">
-                <h4>Ants & Grains Network</h4>
-                <p>Refer fellow ants with +{directBonus} grains direct bonus and expand across {maxLevels} independent chart levels.</p>
-              </div>
-            </div>
-
-            <div className="auth-feature-card">
-              <div className="auth-feature-icon cash-icon">💸</div>
-              <div className="auth-feature-content">
-                <h4>Partner Merchant Cashback</h4>
-                <p>Real-time cashback on daily essentials and e-commerce, instantly swappable into colony grains.</p>
-              </div>
-            </div>
-
-            <div className="auth-feature-card">
-              <div className="auth-feature-icon vault-icon">💼</div>
-              <div className="auth-feature-content">
-                <h4>Unified Member Vault</h4>
-                <p>Transparent UPI withdrawals with live clearance tracking and zero-fee internal asset swaps.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Real Platform Capability Strip (Clean, Authentic, Sponsor-Safe) */}
-          <div className="auth-stat-strip">
-            <div className="stat-pill">
-              <strong>10-Level</strong> Transparent Tree Depth
-            </div>
-            <div className="stat-pill">
-              <strong>Direct UPI</strong> Zero-Fee Payouts
-            </div>
-            <div className="stat-pill">
-              <strong>Mobile OTP</strong> Instant Verification
-            </div>
-          </div>
         </div>
 
-        {/* Right Side: High-End Glassmorphic Auth Form */}
-        <div className="auth-card-side">
-          <div className="auth-glass-card">
-            {/* Header Switcher */}
+        <div className="auth-glass-card">
+          {/* Header Switcher */}
             <div className="auth-method-switcher">
               <button
                 type="button"
@@ -571,8 +524,7 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
               <span className="security-tag">🔒 End-to-End Encrypted Mobile Verification</span>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
       {/* Footer Branding Strip */}
       <footer className="auth-landing-footer">
