@@ -33,20 +33,37 @@ public class AuthController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
         {
-            return BadRequest(new { message = "Email and password are required." });
+            return BadRequest(new { message = "Email/Phone and password are required." });
         }
 
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        var input = request.Email.Trim();
+        var digitsOnly = new string(input.Where(char.IsDigit).ToArray());
+        if (digitsOnly.Length > 10 && digitsOnly.StartsWith("91"))
+        {
+            digitsOnly = digitsOnly.Substring(2);
+        }
+
+        User? user = null;
+        if (digitsOnly.Length == 10)
+        {
+            user = await _userRepository.GetByPhoneAsync(digitsOnly);
+        }
+
         if (user == null)
         {
-            return Unauthorized(new { message = "Invalid email or password." });
+            user = await _userRepository.GetByEmailAsync(input);
+        }
+
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Invalid email, phone number, or password." });
         }
 
         // Verify password using BCrypt
         var isValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
         if (!isValid)
         {
-            return Unauthorized(new { message = "Invalid email or password." });
+            return Unauthorized(new { message = "Invalid email, phone number, or password." });
         }
 
         if (!user.IsActive)
@@ -220,7 +237,7 @@ public class AuthController : ControllerBase
                 Id = Guid.NewGuid(),
                 PhoneNumber = digitsOnly,
                 Email = $"{digitsOnly}@affinovas.online",
-                PasswordHash = _passwordHasher.HashPassword(Guid.NewGuid().ToString("N")),
+                PasswordHash = _passwordHasher.HashPassword(string.IsNullOrWhiteSpace(request.Password) ? Guid.NewGuid().ToString("N") : request.Password.Trim()),
                 FirstName = cleanName,
                 LastName = string.Empty,
                 Role = UserRole.Member,
@@ -314,5 +331,5 @@ public class AuthController : ControllerBase
 public record LoginDto(string Email, string Password);
 public record RegisterDto(string Email, string Password, string FirstName, string? LastName, string? ReferralCode, string? UpiId);
 public record SendOtpDto(string PhoneNumber);
-public record VerifyOtpDto(string PhoneNumber, string OtpCode, string? AntName, string? ReferralCode);
+public record VerifyOtpDto(string PhoneNumber, string OtpCode, string? AntName, string? ReferralCode, string? Password);
 

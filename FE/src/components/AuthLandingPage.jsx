@@ -4,7 +4,7 @@ import { toast } from './Toast'
 import './AuthLandingPage.css'
 
 export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
-  // Authentication Mode: 'mobile-otp' | 'admin-login'
+  // Authentication Mode: 'mobile-otp' | 'password-login' | 'admin-login'
   const [authMethod, setAuthMethod] = useState('mobile-otp')
 
   // Mobile OTP States
@@ -12,11 +12,18 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
   const [otpStep, setOtpStep] = useState('phone') // 'phone' | 'otp'
   const [otpCode, setOtpCode] = useState('')
   const [antName, setAntName] = useState('')
+  const [newUserPassword, setNewUserPassword] = useState('')
+  const [showNewUserPassword, setShowNewUserPassword] = useState(false)
   const [refCode, setRefCode] = useState(() => {
     const params = new URLSearchParams(window.location.search)
     return params.get('ref') || ''
   })
   const [isNewUser, setIsNewUser] = useState(false)
+
+  // Member Password Login States
+  const [loginIdentifier, setLoginIdentifier] = useState('')
+  const [memberPassword, setMemberPassword] = useState('')
+  const [showMemberPassword, setShowMemberPassword] = useState(false)
 
   // Admin Legacy Access States
   const [adminEmail, setAdminEmail] = useState('')
@@ -73,7 +80,8 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
         phoneNumber: cleanDigits,
         otpCode: otpCode.trim(),
         antName: isNewUser ? antName : undefined,
-        referralCode: isNewUser ? refCode : undefined
+        referralCode: isNewUser ? refCode : undefined,
+        password: isNewUser && newUserPassword.trim() ? newUserPassword.trim() : undefined
       })
       toast.success(
         isNewUser ? 'Welcome to Affinovas! Your ant profile is ready.' : 'Signed in successfully!',
@@ -89,7 +97,30 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
     }
   }
 
-  // 3. Admin / Desk Sign In
+  // 3. Member Password Sign In (Phone / Username + Password)
+  const handleMemberPasswordLogin = async (e) => {
+    e?.preventDefault()
+    setError('')
+    if (!loginIdentifier.trim() || !memberPassword) {
+      setError('Please enter your mobile number or username and password.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const data = await apiService.login(loginIdentifier.trim(), memberPassword)
+      toast.success(`Welcome back, ${data.user.name || 'Ant Member'}!`, 'Access Granted')
+      if (onLoginSuccess) {
+        onLoginSuccess(data.user)
+      }
+    } catch (err) {
+      setError(err.message || 'Invalid credentials or password.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 4. Admin / Desk Sign In
   const handleAdminLogin = async (e) => {
     e?.preventDefault()
     setError('')
@@ -201,7 +232,17 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
                   setError('')
                 }}
               >
-                📱 Mobile OTP Access
+                📱 Mobile OTP
+              </button>
+              <button
+                type="button"
+                className={`method-switch-btn ${authMethod === 'password-login' ? 'active' : ''}`}
+                onClick={() => {
+                  setAuthMethod('password-login')
+                  setError('')
+                }}
+              >
+                🔑 Password Login
               </button>
               <button
                 type="button"
@@ -287,6 +328,31 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
 
                         <div className="auth-input-group">
                           <div className="label-with-badge">
+                            <label htmlFor="auth-new-pwd">Set Account Password</label>
+                            <span className="ref-tag">Recommended</span>
+                          </div>
+                          <div className="auth-input-wrap">
+                            <span className="input-icon">🔒</span>
+                            <input
+                              id="auth-new-pwd"
+                              type={showNewUserPassword ? 'text' : 'password'}
+                              placeholder="Create a password (for quick login later)"
+                              value={newUserPassword}
+                              onChange={(e) => setNewUserPassword(e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              className="toggle-pwd-btn"
+                              onClick={() => setShowNewUserPassword(!showNewUserPassword)}
+                            >
+                              {showNewUserPassword ? '🙈' : '👁️'}
+                            </button>
+                          </div>
+                          <span className="input-hint">Set a password now to sign in directly without waiting for OTPs.</span>
+                        </div>
+
+                        <div className="auth-input-group">
+                          <div className="label-with-badge">
                             <label htmlFor="auth-new-ref">Referral Code (Inviter Ant)</label>
                             <span className="ref-tag">Optional</span>
                           </div>
@@ -363,7 +429,91 @@ export default function AuthLandingPage({ onLoginSuccess, colonyConfig }) {
               </div>
             )}
 
-            {/* FLOW 2: ADMIN / OPERATOR DESK */}
+            {/* FLOW 2: MEMBER PASSWORD LOGIN */}
+            {authMethod === 'password-login' && (
+              <div className="password-login-flow">
+                <div className="auth-form-header">
+                  <h2>🔑 Member Sign In</h2>
+                  <p>Log in directly with your registered mobile number or username and password.</p>
+                </div>
+
+                <form onSubmit={handleMemberPasswordLogin} className="auth-form-body">
+                  <div className="auth-input-group">
+                    <label htmlFor="auth-member-id">Mobile Number or Username</label>
+                    <div className="auth-input-wrap">
+                      <span className="input-icon">🐜</span>
+                      <input
+                        id="auth-member-id"
+                        type="text"
+                        placeholder="e.g. 9876543210 or Ant_Ramesh"
+                        value={loginIdentifier}
+                        onChange={(e) => setLoginIdentifier(e.target.value)}
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <div className="auth-input-group">
+                    <div className="label-with-badge">
+                      <label htmlFor="auth-member-pwd">Account Password</label>
+                      <button
+                        type="button"
+                        className="change-phone-link"
+                        onClick={() => {
+                          setAuthMethod('mobile-otp')
+                          setError('')
+                        }}
+                      >
+                        Use Mobile OTP instead
+                      </button>
+                    </div>
+                    <div className="auth-input-wrap">
+                      <span className="input-icon">🔒</span>
+                      <input
+                        id="auth-member-pwd"
+                        type={showMemberPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={memberPassword}
+                        onChange={(e) => setMemberPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="toggle-pwd-btn"
+                        onClick={() => setShowMemberPassword(!showMemberPassword)}
+                      >
+                        {showMemberPassword ? '🙈' : '👁️'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="auth-submit-btn"
+                    disabled={loading || !loginIdentifier.trim() || !memberPassword}
+                  >
+                    {loading ? 'Authenticating...' : 'Sign In to Colony →'}
+                  </button>
+
+                  <div className="resend-otp-row">
+                    <span>Don't have a password yet?</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMethod('mobile-otp')
+                        setError('')
+                      }}
+                      className="resend-link-btn"
+                    >
+                      Sign In or Register with Mobile OTP
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* FLOW 3: ADMIN / OPERATOR DESK */}
             {authMethod === 'admin-login' && (
               <div className="admin-login-flow">
                 <div className="auth-form-header">

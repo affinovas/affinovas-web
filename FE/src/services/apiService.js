@@ -137,12 +137,12 @@ export const apiService = {
     }
   },
 
-  async verifyOtp({ phoneNumber, otpCode, antName, referralCode }) {
+  async verifyOtp({ phoneNumber, otpCode, antName, referralCode, password }) {
     try {
       const res = await fetch(`${API_BASE}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, otpCode, antName, referralCode })
+        body: JSON.stringify({ phoneNumber, otpCode, antName, referralCode, password })
       })
       if (res.ok) {
         const data = await res.json()
@@ -195,7 +195,7 @@ export const apiService = {
         id: 'u-' + Date.now(),
         email: `${clean.slice(-10)}@affinovas.online`,
         phoneNumber: `+91${clean.slice(-10)}`,
-        password: '',
+        password: password ? password.trim() : '',
         name: rawName,
         role: 'member',
         referralCode: refCode,
@@ -210,6 +210,10 @@ export const apiService = {
       }
       users.push(user)
       setStore('users', users)
+    } else if (password) {
+      // If user already existed and decided to set/update a password
+      user.password = password.trim()
+      setStore('users', users)
     }
 
     const authData = {
@@ -221,13 +225,13 @@ export const apiService = {
     return authData
   },
 
-  // Legacy Email/Password Authentication
-  async login(email, password) {
+  // Password Authentication (Supports Mobile Number, Username/Name, or Email)
+  async login(identifier, password) {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: identifier, password })
       })
       if (res.ok) {
         const data = await res.json()
@@ -236,22 +240,31 @@ export const apiService = {
         return data
       } else {
         const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.message || 'Invalid email or password.')
+        throw new Error(errData.message || 'Invalid credentials or password.')
       }
     } catch (err) {
-      if (err.message && err.message !== 'Failed to fetch') {
+      if (err.message && !err.message.includes('fetch') && !err.message.includes('Network') && !err.message.includes('Failed')) {
         throw err
       }
       // Offline fallback only when backend server is unreachable
     }
 
+    const cleanInput = (identifier || '').trim().toLowerCase()
+    const cleanDigits = cleanInput.replace(/\D/g, '')
     const users = getStore('users', INITIAL_USERS)
-    const found = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    )
+
+    const found = users.find((u) => {
+      const emailMatch = u.email && u.email.toLowerCase() === cleanInput
+      const nameMatch = u.name && u.name.toLowerCase() === cleanInput
+      const phoneDigits = (u.phoneNumber || '').replace(/\D/g, '')
+      const phoneMatch = cleanDigits.length >= 10 && phoneDigits.endsWith(cleanDigits.slice(-10))
+      const refMatch = u.referralCode && u.referralCode.toLowerCase() === cleanInput
+
+      return (emailMatch || nameMatch || phoneMatch || refMatch) && u.password === password
+    })
 
     if (!found) {
-      throw new Error('Invalid email or password.')
+      throw new Error('Invalid mobile number, username, or password.')
     }
     if (!found.isActive) {
       throw new Error('This account is suspended. Contact Affinovas Administrator.')
@@ -262,6 +275,7 @@ export const apiService = {
       user: {
         id: found.id,
         email: found.email,
+        phoneNumber: found.phoneNumber,
         name: found.name,
         role: found.role,
         referralCode: found.referralCode,
